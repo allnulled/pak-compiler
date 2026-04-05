@@ -1,0 +1,13 @@
+{
+  "name": "pak-compiler",
+  "version": "1.0.0",
+  "main": "pak-compiler.js",
+  "scripts": {
+    "dev": "node dev.sh",
+    "test": "node test.js"
+  },
+  "keywords": [],
+  "author": "allnulled",
+  "license": "WTFPL",
+  "description": ""
+}
