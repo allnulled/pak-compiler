@@ -61,6 +61,11 @@
       this.modules = {};
     }
 
+    setBasedir(basedir) {
+      this.basedir = basedir;
+      return this;
+    }
+
     $fetchResource(resource, modulesCache = this.modules) {
       PakCompiler.trace("PakCompiler.prototype.$fetchResource");
       console.log("Fetching: " + resource);

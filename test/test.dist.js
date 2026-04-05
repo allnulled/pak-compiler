@@ -1,7 +1,7 @@
 // @pak-module:
 // - Source generated:
-//    - date:         Sun Apr 05 2026 12:33:35 GMT+0200 (hora de verano de Europa central)
-//    - time:         0.037 seconds
+//    - date:         Sun Apr 05 2026 12:55:09 GMT+0200 (hora de verano de Europa central)
+//    - time:         0.034 seconds
 //    - modules:      14
 //       - 0. Pak.require("test/01. Simple test/mod-a/mod-a1.js")
 //       - 1. Pak.require("test/01. Simple test/mod-a/mod-a2.js")
