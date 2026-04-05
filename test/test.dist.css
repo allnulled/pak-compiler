@@ -1,0 +1,17 @@
+/* @css.module[1] = test/01. Simple test/mod-a/styles-a.css */
+html,
+body {}
+
+.a1,
+.a2,
+.a3 {}
+
+/* @css.module[2] = test/01. Simple test/mod-a/styles-a1.css */
+/* Pak.require("test/01. Simple test/mod-a/styles-a.css") */
+.a1 {}
+
+/* @css.module[3] = test/01. Simple test/mod-a/styles-a2.css */
+.a2 {}
+
+/* @css.module[4] = test/01. Simple test/mod-a/styles-a3.css */
+.a3 {}

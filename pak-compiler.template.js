@@ -63,6 +63,7 @@
 
     $fetchResource(resource, modulesCache = this.modules) {
       PakCompiler.trace("PakCompiler.prototype.$fetchResource");
+      console.log("Fetching: " + resource);
       if (resource in modulesCache) {
         return modulesCache[resource];
       }
@@ -84,7 +85,7 @@
     };
 
     $getExplicitDependenciesFromSource(source, modulerBruteFilter = "") {
-      PakCompiler.trace("PakCompiler.prototype.$fetchResource");
+      PakCompiler.trace("PakCompiler.prototype.$getExplicitDependenciesFromSource");
       const dependencies = [];
       Iterating_matches:
       for (const match of source.matchAll(this.constructor.symbols.$REGEX_FOR_REQUIRES)) {
@@ -106,7 +107,7 @@
         `  try {`,
         `    ${source}`,
         `  } catch(error) {`,
-        `    console.log("⛔️ Error on module ${id}", error);`,
+        `    console.log("⛔️ Error on module ${id}\\n  ", error);`,
         `    throw error;`,
         `  } finally {`,
         `    ${pakInstanceId}.modules[${JSON.stringify(id)}] = module.exports;`,
@@ -150,20 +151,10 @@
       PakCompiler.trace("PakCompiler.prototype.$writeJsPakSource");
       return [
         `// @module[main] = Pak`,
-        `(function() {`,
-        `  const Pak = Object.create(typeof Pak === "object" ? Pak : {`,
-        `    modules: {},`,
-        `    require: function(id) {`,
-        `      if(!(id in Pak.modules)) {`,
-        `        throw new Error("Module not found «" + id + "» on «Pak.require»");`,
-        `      }`,
-        `      return Pak.modules[id];`,
-        `    },`,
-        `  });`,
-        `  if(typeof window !== "undefined" && typeof window.Pak === "undefined") window.Pak = Pak;`,
-        `  if(typeof global !== "undefined" && typeof global.Pak === "undefined") global.Pak = Pak;`,
+        `(function(PreviousPak) {`,
+        __PAK_SNIPPET__.OpaquePak,
         source,
-        `})()`,
+        `})(typeof Pak !== "undefined" ? Pak : false)`,
       ].join("\n");
     }
 

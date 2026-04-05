@@ -1,0 +1,1 @@
+Pak.require("test/01. Simple test/mod-a/styles-a1.css");

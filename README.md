@@ -56,9 +56,11 @@ const value = Pak.require("path/to/anywhere"); // no concat, no variables, solo 
 
 Tiene que ser:
 
-- 1 string del tirón
-- ni concats ni variables
+- 1 string **de dobles comitas** `"string aquí"` del tirón
+- ni concats ni variables ni templates
 - no puede contener `)` bajo ningún concepto
+- dentro de los `(` y `)` tiene que haber un string en JSON bien formado
+   - valen `\\"` pero `)` interrumpe la regexp
 
 Nótese la sincronicidad, no hay `await` porque en runtime, aquí ya habrá cargado la dependencia.
 
