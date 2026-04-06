@@ -1,7 +1,6 @@
-- tema drivers
-   - 1 y global
-   - no arrastres configuraciones ni nada por proyecto
 - tema cli
    - pak build ${proyecto}
-   - pak run ${comando} ${...parametros}
+      - opción --file main.js
+   - pak run ${comando}
+      
    - pak init ${ruta}

@@ -42,11 +42,14 @@ Herramientas en proceso.
       - si tienes muchos puedes hacer `pak run --project ${PROYECTO} ${COMANDO}`
 - `@@/drivers.json`:
    - personalizable.
+   - contiene las abreviaciones de los módulos.
    - este objeto existe tanto en *compilation* como en *runtime*.
    - es un json que contiene shortnames para módulos o rutas de módulo.
-   - la única norma es que el selector tiene que empezar por el id del driver
-      - y el driver cambia esa subruta siempre
-   - contiene las abreviaciones de los módulos.
-      - para no tener que escribir todo el path del módulo siempre
-      - para poder cambiar de APIs que hacen lo mismo fácil
+   - la única norma es que:
+      - el selector tiene que empezar por el id del driver
+      - el driver cambia esa subruta siempre
+      - tampoco sirven los '..'
+   - sirve para:
+      - no tener que escribir todo el path del módulo siempre
+      - poder cambiar de APIs que hacen lo mismo fácil
 

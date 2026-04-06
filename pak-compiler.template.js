@@ -36,6 +36,7 @@
       }
     }
 
+    // @DEV: debería ser false por defecto:
     static isTracing = true;
 
     static trace(method) {
@@ -62,6 +63,7 @@
     }
 
     setBasedir(basedir) {
+      PakCompiler.trace("PakCompiler.prototype.setBasedir");
       this.basedir = basedir;
       return this;
     }
@@ -134,7 +136,7 @@
         `    console.log("⛔️ Error on module ${id}\\n  ", error);`,
         `    throw error;`,
         `  } finally {`,
-        `    ${pakInstanceId}.modules[${JSON.stringify(id)}] = module.exports;`,
+        `    __LAST_PAK_RESULT__ = ${pakInstanceId}.modules[${JSON.stringify(id)}] = module.exports;`,
         `  }`,
         `})({ exports: undefined });\n`,
       ].join("\n");
@@ -175,14 +177,16 @@
       PakCompiler.trace("PakCompiler.prototype.$writeJsPakSource");
       return [
         `// @module[main] = Pak`,
-        `(function(PreviousPak) {`,
-        __PAK_SNIPPET__.OpaquePak.replace(this.constructor.symbols.$REGEX_FOR_DRIVERS, JSON.stringify(drivers, null, 2)),
+        `(function(globalPak) {`,
+        __PAK_SNIPPET__.PakHeader.replace(this.constructor.symbols.$REGEX_FOR_DRIVERS, JSON.stringify(drivers, null, 2)),
         source,
+        __PAK_SNIPPET__.PakFooter,
         `})(typeof Pak !== "undefined" ? Pak : false)`,
       ].join("\n");
     }
 
     async $buildJs(...args) {
+      PakCompiler.trace("PakCompiler.prototype.$buildJs");
       const [
         file,
         driversJson = {},
@@ -193,7 +197,6 @@
         sortedHtmlModules = [],
         htmlTemplate = false
       ] = args;
-      PakCompiler.trace("PakCompiler.prototype.$buildJs");
       let source = await this.$fetchResource(file, modulesCache);
       let js = "";
       let css = "";
@@ -214,6 +217,7 @@
     }
 
     async $buildCss(...args) {
+      PakCompiler.trace("PakCompiler.prototype.$buildCss");
       const [
         file,
         driversJson = {},
@@ -225,7 +229,6 @@
         htmlTemplate = false,
         canFail = false
       ] = args;
-      PakCompiler.trace("PakCompiler.prototype.$buildCss");
       let source = await this.$fetchResource(file, modulesCache);
       let js = "";
       let css = "";
@@ -246,6 +249,7 @@
     }
 
     async $buildHtml(...args) {
+      PakCompiler.trace("PakCompiler.prototype.$buildHtml");
       const [
         file,
         driversJson = {},
@@ -255,13 +259,13 @@
         sortedCssModules = [],
         sortedHtmlModules = [],
       ] = args;
-      PakCompiler.trace("PakCompiler.prototype.$buildHtml");
       const text = await this.$fetchResource(file, modulesCache);
       sortedHtmlModules.push(file);
       return text;
     }
 
     async $buildAny(...args) {
+      PakCompiler.trace("PakCompiler.prototype.$buildAny");
       const [
         file,
         driversJson = {},
@@ -271,7 +275,6 @@
         sortedCssModules = [],
         sortedHtmlModules = []
       ] = args;
-      PakCompiler.trace("PakCompiler.prototype.$build");
       const fileExtension = file.split(".").pop();
       let html = "";
       let css = "";
@@ -319,6 +322,7 @@
     }
 
     $getDrivers() {
+      PakCompiler.trace("PakCompiler.prototype.$getDrivers");
       if (this.drivers) {
         return this.drivers;
       }
@@ -356,6 +360,13 @@
       const duration = ((new Date()) - start) / 1000;
       js = this.$writeJsHeader(jsModules, cssModules, htmlModules, duration, pakInstanceId) + "" + js;
       return { js, css, jsModules, cssModules, htmlModules, duration, start };
+    }
+
+    run(file, options = {}) {
+      PakCompiler.trace("PakCompiler.prototype.run");
+      return this.build(file, options).then(output => {
+        return eval(output.js);
+      });
     }
 
   };

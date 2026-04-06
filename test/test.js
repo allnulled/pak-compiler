@@ -2,10 +2,10 @@ const fs = require("fs");
 const path = require("path");
 const PakCompiler = require(__dirname + "/../pak-compiler.dist.js");
 
+PakCompiler.isTracing = false;
 global.__PAK_COMPILER_TEST_NAMESPACE__ = {};
 
 const main = async function () {
-  console.log("starting");
   PakCompiler.global.setBasedir(__dirname);
   const buildJson = await PakCompiler.global.build("build.js");
   const { js, css, jsModules, cssModules } = buildJson;

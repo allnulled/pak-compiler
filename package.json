@@ -2,6 +2,9 @@
   "name": "pak-compiler",
   "version": "1.0.0",
   "main": "pak-compiler.dist.js",
+  "bin": {
+    "pak": "pak-cli.js"
+  },
   "scripts": {
     "dev": "node dev.sh",
     "test": "node test.js"

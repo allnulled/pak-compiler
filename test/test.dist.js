@@ -1,8 +1,8 @@
 // @pak-module:
 // - Source generated:
-//    - date:         Mon Apr 06 2026 17:20:35 GMT+0200 (hora de verano de Europa central)
-//    - time:         0.037 seconds
-//    - modules:      14
+//    - date:         Mon Apr 06 2026 23:59:04 GMT+0200 (hora de verano de Europa central)
+//    - time:         0.031 seconds
+//    - modules:      15
 //       - 0. Pak.require("01. Simple test/mod-a/mod-a1.js")
 //       - 1. Pak.require("01. Simple test/mod-a/mod-a2.js")
 //       - 2. Pak.require("01. Simple test/mod-a/mod-a3.js")
@@ -16,7 +16,8 @@
 //       - 10. Pak.require("02. Drivers test/modules/second.js")
 //       - 11. Pak.require("02. Drivers test/modules/third.js")
 //       - 12. Pak.require("02. Drivers test/index.js")
-//       - 13. Pak.require("build.js")
+//       - 13. Pak.require("03. Evaluator test/index.js")
+//       - 14. Pak.require("build.js")
 //    - styles:       4
 //       - 0. Pak.require("01. Simple test/mod-a/styles-a.css")
 //       - 1. Pak.require("01. Simple test/mod-a/styles-a1.css")
@@ -24,32 +25,18 @@
 //       - 3. Pak.require("01. Simple test/mod-a/styles-a3.css")
 //    - templates:    0
 // @module[main] = Pak
-(function(PreviousPak) {
+(function(globalPak) {
   //////////////////////////////////////////////////////////////////////////////
-  const Pak = Object.create(typeof PreviousPak === "object" ? PreviousPak : {
+  let __LAST_PAK_RESULT__ = undefined;
+  const Pak = {
+    // API de Pak Asserter: 1/3
     assert: (condition, message) => {
-      if (!condition) throw new Error(message)
-    },
-    modules: {},
-    drivers: {
-      "drivers-test/first": "02. Drivers test/modules/first.js",
-      "drivers-test/second": "02. Drivers test/modules/second.js",
-      "drivers-test/third": "02. Drivers test/modules/third.js",
-      "drivers-test/modules": "02. Drivers test/modules"
-    },
-    driversByKeys: false,
-    resolveDriver: function(id) {
-      if (!this.driversByKeys) {
-        this.driversByKeys = Object.keys(this.drivers);
+      if (!condition) {
+        throw new Error(message);
       }
-      for (let index = 0; index < this.driversByKeys.length; index++) {
-        const key = this.driversByKeys[index];
-        if (id.startsWith(key)) {
-          return id.replace(key, this.drivers[key]);
-        }
-      }
-      return id;
     },
+    // API de Pak Modules: 2/3
+    modules: typeof globalPak === "object" ? Object.create(globalPak.modules) : {},
     require: function(originalId) {
       const id = Pak.resolveDriver(originalId);
       if (id.endsWith(".css")) {
@@ -63,7 +50,30 @@
       }
       return Pak.modules[id];
     },
-  });
+    // API de Pak Drivers: 3/3
+    drivers: {
+      "drivers-test/first": "02. Drivers test/modules/first.js",
+      "drivers-test/second": "02. Drivers test/modules/second.js",
+      "drivers-test/third": "02. Drivers test/modules/third.js",
+      "drivers-test/modules": "02. Drivers test/modules"
+    },
+    driverIds: false,
+    resolveDriver: function(id) {
+      if (!this.driverIds) {
+        this.driverIds = Object.keys(this.drivers).sort((a, b) => {
+          return a.length > b.length ? -1 : a.length < b.length ? 1 : 0;
+        });
+      }
+      for (let index = 0; index < this.driverIds.length; index++) {
+        const key = this.driverIds[index];
+        if (id.startsWith(key)) {
+          return id.replace(key, this.drivers[key]);
+        }
+      }
+      return id;
+    },
+  };
+  // Exporta Pak si no hay ya uno:
   if (typeof window !== "undefined" && typeof window.Pak === "undefined") window.Pak = Pak;
   if (typeof global !== "undefined" && typeof global.Pak === "undefined") global.Pak = Pak;
   //////////////////////////////////////////////////////////////////////////////
@@ -76,7 +86,7 @@
       console.log("⛔️ Error on module 01. Simple test/mod-a/mod-a1.js\n  ", error);
       throw error;
     } finally {
-      Pak.modules["01. Simple test/mod-a/mod-a1.js"] = module.exports;
+      __LAST_PAK_RESULT__ = Pak.modules["01. Simple test/mod-a/mod-a1.js"] = module.exports;
     }
   })({
     exports: undefined
@@ -90,7 +100,7 @@
       console.log("⛔️ Error on module 01. Simple test/mod-a/mod-a2.js\n  ", error);
       throw error;
     } finally {
-      Pak.modules["01. Simple test/mod-a/mod-a2.js"] = module.exports;
+      __LAST_PAK_RESULT__ = Pak.modules["01. Simple test/mod-a/mod-a2.js"] = module.exports;
     }
   })({
     exports: undefined
@@ -104,7 +114,7 @@
       console.log("⛔️ Error on module 01. Simple test/mod-a/mod-a3.js\n  ", error);
       throw error;
     } finally {
-      Pak.modules["01. Simple test/mod-a/mod-a3.js"] = module.exports;
+      __LAST_PAK_RESULT__ = Pak.modules["01. Simple test/mod-a/mod-a3.js"] = module.exports;
     }
   })({
     exports: undefined
@@ -121,7 +131,7 @@
       console.log("⛔️ Error on module 01. Simple test/mod-a.js\n  ", error);
       throw error;
     } finally {
-      Pak.modules["01. Simple test/mod-a.js"] = module.exports;
+      __LAST_PAK_RESULT__ = Pak.modules["01. Simple test/mod-a.js"] = module.exports;
     }
   })({
     exports: undefined
@@ -137,7 +147,7 @@
       console.log("⛔️ Error on module 01. Simple test/mod-b/componente-b1.js\n  ", error);
       throw error;
     } finally {
-      Pak.modules["01. Simple test/mod-b/componente-b1.js"] = module.exports;
+      __LAST_PAK_RESULT__ = Pak.modules["01. Simple test/mod-b/componente-b1.js"] = module.exports;
     }
   })({
     exports: undefined
@@ -150,7 +160,7 @@
       console.log("⛔️ Error on module 01. Simple test/mod-b/componente-b2.js\n  ", error);
       throw error;
     } finally {
-      Pak.modules["01. Simple test/mod-b/componente-b2.js"] = module.exports;
+      __LAST_PAK_RESULT__ = Pak.modules["01. Simple test/mod-b/componente-b2.js"] = module.exports;
     }
   })({
     exports: undefined
@@ -163,7 +173,7 @@
       console.log("⛔️ Error on module 01. Simple test/mod-b/componente-b3.js\n  ", error);
       throw error;
     } finally {
-      Pak.modules["01. Simple test/mod-b/componente-b3.js"] = module.exports;
+      __LAST_PAK_RESULT__ = Pak.modules["01. Simple test/mod-b/componente-b3.js"] = module.exports;
     }
   })({
     exports: undefined
@@ -178,7 +188,7 @@
       console.log("⛔️ Error on module 01. Simple test/mod-b.js\n  ", error);
       throw error;
     } finally {
-      Pak.modules["01. Simple test/mod-b.js"] = module.exports;
+      __LAST_PAK_RESULT__ = Pak.modules["01. Simple test/mod-b.js"] = module.exports;
     }
   })({
     exports: undefined
@@ -194,7 +204,7 @@
       console.log("⛔️ Error on module 01. Simple test/index.js\n  ", error);
       throw error;
     } finally {
-      Pak.modules["01. Simple test/index.js"] = module.exports;
+      __LAST_PAK_RESULT__ = Pak.modules["01. Simple test/index.js"] = module.exports;
     }
   })({
     exports: undefined
@@ -207,7 +217,7 @@
       console.log("⛔️ Error on module 02. Drivers test/modules/first.js\n  ", error);
       throw error;
     } finally {
-      Pak.modules["02. Drivers test/modules/first.js"] = module.exports;
+      __LAST_PAK_RESULT__ = Pak.modules["02. Drivers test/modules/first.js"] = module.exports;
     }
   })({
     exports: undefined
@@ -221,7 +231,7 @@
       console.log("⛔️ Error on module 02. Drivers test/modules/second.js\n  ", error);
       throw error;
     } finally {
-      Pak.modules["02. Drivers test/modules/second.js"] = module.exports;
+      __LAST_PAK_RESULT__ = Pak.modules["02. Drivers test/modules/second.js"] = module.exports;
     }
   })({
     exports: undefined
@@ -235,7 +245,7 @@
       console.log("⛔️ Error on module 02. Drivers test/modules/third.js\n  ", error);
       throw error;
     } finally {
-      Pak.modules["02. Drivers test/modules/third.js"] = module.exports;
+      __LAST_PAK_RESULT__ = Pak.modules["02. Drivers test/modules/third.js"] = module.exports;
     }
   })({
     exports: undefined
@@ -258,29 +268,53 @@
       Pak.assert(first === first2, "First should be 1 like first2");
       Pak.assert(second === second2, "Second should be 2 like second2");
       Pak.assert(third === third2, "Third should be 3 like third2");
-
     } catch (error) {
       console.log("⛔️ Error on module 02. Drivers test/index.js\n  ", error);
       throw error;
     } finally {
-      Pak.modules["02. Drivers test/index.js"] = module.exports;
+      __LAST_PAK_RESULT__ = Pak.modules["02. Drivers test/index.js"] = module.exports;
     }
   })({
     exports: undefined
   });
-  // @module[14] = build.js
+  // @module[14] = 03. Evaluator test/index.js
+  (function(module) {
+    try {
+      // Ya viene importado del test.js:
+      // require(__dirname + "/../pak-compiler.dist.js");
+
+      (async function main() {
+
+        const mod78 = await PakCompiler.global.run("03. Evaluator test/mod78.js");
+
+        PakCompiler.assert(78 === mod78, "Module mod78 should be 78");
+
+      })();
+    } catch (error) {
+      console.log("⛔️ Error on module 03. Evaluator test/index.js\n  ", error);
+      throw error;
+    } finally {
+      __LAST_PAK_RESULT__ = Pak.modules["03. Evaluator test/index.js"] = module.exports;
+    }
+  })({
+    exports: undefined
+  });
+  // @module[15] = build.js
   (function(module) {
     try {
       Pak.require("01. Simple test/index.js");
       Pak.require("02. Drivers test/index.js");
+      Pak.require("03. Evaluator test/index.js");
     } catch (error) {
       console.log("⛔️ Error on module build.js\n  ", error);
       throw error;
     } finally {
-      Pak.modules["build.js"] = module.exports;
+      __LAST_PAK_RESULT__ = Pak.modules["build.js"] = module.exports;
     }
   })({
     exports: undefined
   });
+
+  return __LAST_PAK_RESULT__;
 
 })(typeof Pak !== "undefined" ? Pak : false)

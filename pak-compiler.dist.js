@@ -36,6 +36,7 @@
       }
     }
 
+    // @DEV: debería ser false por defecto:
     static isTracing = true;
 
     static trace(method) {
@@ -62,6 +63,7 @@
     }
 
     setBasedir(basedir) {
+      PakCompiler.trace("PakCompiler.prototype.setBasedir");
       this.basedir = basedir;
       return this;
     }
@@ -134,7 +136,7 @@
         `    console.log("⛔️ Error on module ${id}\\n  ", error);`,
         `    throw error;`,
         `  } finally {`,
-        `    ${pakInstanceId}.modules[${JSON.stringify(id)}] = module.exports;`,
+        `    __LAST_PAK_RESULT__ = ${pakInstanceId}.modules[${JSON.stringify(id)}] = module.exports;`,
         `  }`,
         `})({ exports: undefined });\n`,
       ].join("\n");
@@ -175,26 +177,19 @@
       PakCompiler.trace("PakCompiler.prototype.$writeJsPakSource");
       return [
         `// @module[main] = Pak`,
-        `(function(PreviousPak) {`,
+        `(function(globalPak) {`,
         (
          "//////////////////////////////////////////////////////////////////////////////\n"+
-         "const Pak = Object.create(typeof PreviousPak === \"object\" ? PreviousPak : {\n"+
-         "  assert: (condition, message) => { if(!condition) throw new Error(message) },\n"+
-         "  modules: {},\n"+
-         "  drivers: __PAK_DRIVERS__,\n"+
-         "  driversByKeys: false,\n"+
-         "  resolveDriver: function(id) {\n"+
-         "    if(!this.driversByKeys) {\n"+
-         "      this.driversByKeys = Object.keys(this.drivers);\n"+
+         "let __LAST_PAK_RESULT__ = undefined;\n"+
+         "const Pak = {\n"+
+         "  // API de Pak Asserter: 1/3\n"+
+         "  assert: (condition, message) => {\n"+
+         "    if(!condition) {\n"+
+         "      throw new Error(message);\n"+
          "    }\n"+
-         "    for(let index=0; index<this.driversByKeys.length; index++) {\n"+
-         "      const key = this.driversByKeys[index];\n"+
-         "      if(id.startsWith(key)) {\n"+
-         "        return id.replace(key, this.drivers[key]);\n"+
-         "      }\n"+
-         "    }\n"+
-         "    return id;\n"+
          "  },\n"+
+         "  // API de Pak Modules: 2/3\n"+
+         "  modules: typeof globalPak === \"object\" ? Object.create(globalPak.modules) : {},\n"+
          "  require: function (originalId) {\n"+
          "    const id = Pak.resolveDriver(originalId);\n"+
          "    if (id.endsWith(\".css\")) {\n"+
@@ -208,17 +203,39 @@
          "    }\n"+
          "    return Pak.modules[id];\n"+
          "  },\n"+
-         "});\n"+
+         "  // API de Pak Drivers: 3/3\n"+
+         "  drivers: __PAK_DRIVERS__,\n"+
+         "  driverIds: false,\n"+
+         "  resolveDriver: function(id) {\n"+
+         "    if(!this.driverIds) {\n"+
+         "      this.driverIds = Object.keys(this.drivers).sort((a,b) => {\n"+
+         "        return a.length > b.length ? -1 : a.length < b.length ? 1 : 0;\n"+
+         "      });\n"+
+         "    }\n"+
+         "    for(let index=0; index<this.driverIds.length; index++) {\n"+
+         "      const key = this.driverIds[index];\n"+
+         "      if(id.startsWith(key)) {\n"+
+         "        return id.replace(key, this.drivers[key]);\n"+
+         "      }\n"+
+         "    }\n"+
+         "    return id;\n"+
+         "  },\n"+
+         "};\n"+
+         "// Exporta Pak si no hay ya uno:\n"+
          "if (typeof window !== \"undefined\" && typeof window.Pak === \"undefined\") window.Pak = Pak;\n"+
          "if (typeof global !== \"undefined\" && typeof global.Pak === \"undefined\") global.Pak = Pak;\n"+
          "//////////////////////////////////////////////////////////////////////////////\n"
         ).replace(this.constructor.symbols.$REGEX_FOR_DRIVERS, JSON.stringify(drivers, null, 2)),
         source,
+        (
+         "return __LAST_PAK_RESULT__;\n"
+        ),
         `})(typeof Pak !== "undefined" ? Pak : false)`,
       ].join("\n");
     }
 
     async $buildJs(...args) {
+      PakCompiler.trace("PakCompiler.prototype.$buildJs");
       const [
         file,
         driversJson = {},
@@ -229,7 +246,6 @@
         sortedHtmlModules = [],
         htmlTemplate = false
       ] = args;
-      PakCompiler.trace("PakCompiler.prototype.$buildJs");
       let source = await this.$fetchResource(file, modulesCache);
       let js = "";
       let css = "";
@@ -250,6 +266,7 @@
     }
 
     async $buildCss(...args) {
+      PakCompiler.trace("PakCompiler.prototype.$buildCss");
       const [
         file,
         driversJson = {},
@@ -261,7 +278,6 @@
         htmlTemplate = false,
         canFail = false
       ] = args;
-      PakCompiler.trace("PakCompiler.prototype.$buildCss");
       let source = await this.$fetchResource(file, modulesCache);
       let js = "";
       let css = "";
@@ -282,6 +298,7 @@
     }
 
     async $buildHtml(...args) {
+      PakCompiler.trace("PakCompiler.prototype.$buildHtml");
       const [
         file,
         driversJson = {},
@@ -291,13 +308,13 @@
         sortedCssModules = [],
         sortedHtmlModules = [],
       ] = args;
-      PakCompiler.trace("PakCompiler.prototype.$buildHtml");
       const text = await this.$fetchResource(file, modulesCache);
       sortedHtmlModules.push(file);
       return text;
     }
 
     async $buildAny(...args) {
+      PakCompiler.trace("PakCompiler.prototype.$buildAny");
       const [
         file,
         driversJson = {},
@@ -307,7 +324,6 @@
         sortedCssModules = [],
         sortedHtmlModules = []
       ] = args;
-      PakCompiler.trace("PakCompiler.prototype.$build");
       const fileExtension = file.split(".").pop();
       let html = "";
       let css = "";
@@ -355,6 +371,7 @@
     }
 
     $getDrivers() {
+      PakCompiler.trace("PakCompiler.prototype.$getDrivers");
       if (this.drivers) {
         return this.drivers;
       }
@@ -392,6 +409,13 @@
       const duration = ((new Date()) - start) / 1000;
       js = this.$writeJsHeader(jsModules, cssModules, htmlModules, duration, pakInstanceId) + "" + js;
       return { js, css, jsModules, cssModules, htmlModules, duration, start };
+    }
+
+    run(file, options = {}) {
+      PakCompiler.trace("PakCompiler.prototype.run");
+      return this.build(file, options).then(output => {
+        return eval(output.js);
+      });
     }
 
   };
