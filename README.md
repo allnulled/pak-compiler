@@ -39,8 +39,10 @@ Herramientas en proceso.
 
 - Hay 2 contextos principales:
    - compilación:
+      - cuando el código fuente está separado en módulos
       - solo está accesible `PakCompiler` y su `PakCompiler.global`.
-   - runtime: cuando el código fuente está separado en módulos
+   - runtime:
+      - cuando el código fuente está unificado y ejecutándose
       - solo está accesible `Pak` y su `Pak.require("path/a/modulo.js")`.
       - puedes importar el `PakCompiler`, de esto trata la sección [Evaluador opcional](#evaluador-opcional).
 
@@ -70,7 +72,7 @@ Herramientas en proceso.
             - los únicos módulos que se quedan en memoria
             - más allá de la llamada `PakCompiler.prototype.run`
             - son los módulos del primer `Pak` que se crea
-            - todos los otros se crearán como clones
+            - todos los otros se crearán como módulos de 1 clon y no del `Pak` padre
             - y el `Pak` accesible desde los módulos
             - nunca es el `Pak` padre
             - sino el clon
@@ -79,14 +81,14 @@ Herramientas en proceso.
             - este `Pak`, si se ha programado con cuidado, desaparecería por el Garbage Collector
             - y volvería a dejar el espacio de memoria libre
             - PERO
-            - para esto hay que programar con cuidado y sabiendo qué se puede hacer y que no
+            - para esto hay que programar con cuidado y sabiendo qué se puede hacer y qué no
             - porque debugar este código es muy difícil
             - porque la evaluación en vivo no tiene tan buen reporte de errores
             - aunque ya procuro meterlo en try-catches
             - pero el problema ni siquiera termina ahí
             - porque ya no es el código
             - son los datos vivos y los datos recolectados
-            - y debugar eso desde JavaScript
+            - y debugar eso desde JavaScript se hace más complicado
             - aunque hay algunas cosas como:
                - `WeakSet` 
                - `WeakMap` 
@@ -96,6 +98,12 @@ Herramientas en proceso.
             - y parecen muy reflectivas, así que bueno
 - Pero existe la posibilidad de usar `PakCompiler` como evaluador
    - y en la API solo significa 1 método de 4 líneas dar soporte a esta *feature*
+   - y en principio es segura, no es que sea experimental, usa `eval` pero está pensado para soportarlo
+   - lo único es eso, que hay que tener mucho cuidado con los `memory leaks`
+      - porque te pueden destruir la funcionalidad de la aplicación
+      - y se hacen irrasterables si la aplicación empieza a hacerse grande
+      - porque ni sabes de dónde viene ni tendrás forma de saberlo depende de cómo
+      - pasa poco, pero cuando pasa es un *killer*
 
 ## Directorios
 
