@@ -1,4 +1,4 @@
-/* @css.module[1] = test/01. Simple test/mod-a/styles-a.css */
+/* @css.module[1] = 01. Simple test/mod-a/styles-a.css */
 html,
 body {}
 
@@ -6,12 +6,12 @@ body {}
 .a2,
 .a3 {}
 
-/* @css.module[2] = test/01. Simple test/mod-a/styles-a1.css */
-/* Pak.require("test/01. Simple test/mod-a/styles-a.css") */
+/* @css.module[2] = 01. Simple test/mod-a/styles-a1.css */
+/* Pak.require("01. Simple test/mod-a/styles-a.css") */
 .a1 {}
 
-/* @css.module[3] = test/01. Simple test/mod-a/styles-a2.css */
+/* @css.module[3] = 01. Simple test/mod-a/styles-a2.css */
 .a2 {}
 
-/* @css.module[4] = test/01. Simple test/mod-a/styles-a3.css */
+/* @css.module[4] = 01. Simple test/mod-a/styles-a3.css */
 .a3 {}

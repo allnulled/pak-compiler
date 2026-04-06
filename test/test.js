@@ -6,7 +6,8 @@ global.__PAK_COMPILER_TEST_NAMESPACE__ = {};
 
 const main = async function () {
   console.log("starting");
-  const buildJson = await PakCompiler.global.build("test/paker.js");
+  PakCompiler.global.setBasedir(__dirname);
+  const buildJson = await PakCompiler.global.build("build.js");
   const { js, css, jsModules, cssModules } = buildJson;
   fs.writeFileSync(__dirname + '/test.dist.js', js, "utf8");
   fs.writeFileSync(__dirname + '/test.dist.css', css, "utf8");

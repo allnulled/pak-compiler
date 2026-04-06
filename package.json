@@ -1,7 +1,7 @@
 {
   "name": "pak-compiler",
   "version": "1.0.0",
-  "main": "pak-compiler.js",
+  "main": "pak-compiler.dist.js",
   "scripts": {
     "dev": "node dev.sh",
     "test": "node test.js"

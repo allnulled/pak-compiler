@@ -13,7 +13,7 @@
 
   // Si estás en node.js, carga seguro el beautifier de js:
   if (typeof global !== "undefined") {
-    global.beautifier = require(__dirname + "/pak_modules/libraries/code-formatter/js-beautify.js");
+    global.beautifier = require(__dirname + "/pak_modules/lib/code-formatter/js-beautify.js");
   }
 
   const PakCompiler = class {
@@ -42,12 +42,12 @@
       if (!this.isTracing) {
         return;
       }
-      console.log(`[pak][trace] ${method}`);
+      console.log(`[pak] [trace] ${method}`);
     }
 
     static env = class {
       static isNodejs = typeof global !== "undefined" && typeof require !== "undefined";
-      static isBrowser = typeof global !== "undefined" && typeof require !== "undefined";
+      static isBrowser = typeof window !== "undefined";
     };
 
     static assert(condition, message) {
@@ -65,10 +65,11 @@
       this.basedir = basedir;
       return this;
     }
-
+    
+    // método seguro: devuelve String o Error
     $fetchResource(resource, modulesCache = this.modules) {
       PakCompiler.trace("PakCompiler.prototype.$fetchResource");
-      console.log("Fetching: " + resource);
+      PakCompiler.trace("[fetching] " + resource);
       if (resource in modulesCache) {
         return modulesCache[resource];
       }
@@ -81,30 +82,48 @@
         }
       }
       if (PakCompiler.env.isBrowser) {
-        // @Yo: Chatgpt, me puedes ayudar aquí?
+        const fullpath = resource.startsWith("http") ? resource : this.basedir + "/" + resource;
+        return fetch(fullpath).then(res => {
+          if (!res.ok) throw new Error(`Failed to fetch ${fullpath}`);
+          return res.text();
+        }).catch(error => {
+          return error;
+        });
       }
     }
 
     static symbols = {
       $REGEX_FOR_REQUIRES: /([A-Za-z_$][A-Za-z0-9_$]*\.)?require\(([^\)]*)\)/g,
+      $REGEX_FOR_DRIVERS: /__PAK_DRIVERS__/g,
     };
 
-    $getExplicitDependenciesFromSource(source, modulerBruteFilter = "") {
+    $resolveDriver(id, driversJson) {
+      PakCompiler.trace("PakCompiler.prototype.$resolveDriver");
+      for (let driver in driversJson) {
+        if (id.startsWith(driver)) {
+          return id.replace(driver, driversJson[driver]);
+        }
+      }
+      return id;
+    }
+
+    $getExplicitDependenciesFromSource(source, driversJson, modulerBruteFilter = "") {
       PakCompiler.trace("PakCompiler.prototype.$getExplicitDependenciesFromSource");
       const dependencies = [];
       Iterating_matches:
       for (const match of source.matchAll(this.constructor.symbols.$REGEX_FOR_REQUIRES)) {
         const [text, modulerBrute, dependency] = match;
-        if(modulerBrute === (modulerBruteFilter + ".")) {
+        if (modulerBrute === (modulerBruteFilter + ".")) {
           const moduler = modulerBrute.substr(0, modulerBrute.length - 1);
-          const id = JSON.parse(dependency);
+          const originalId = JSON.parse(dependency);
+          const id = this.$resolveDriver(originalId, driversJson);
           dependencies.push(id);
         }
       }
       return dependencies;
     }
 
-    $writeJsModuleFor(id, source, modulesCache, pakInstanceId = "Pak", sortedJsModules = []) {
+    $writeJsModuleFor(id, source, driversJson, modulesCache, pakInstanceId = "Pak", sortedJsModules = []) {
       PakCompiler.trace("PakCompiler.prototype.$writeJsModuleFor");
       return [
         `// @module[${sortedJsModules.length}] = ${id}`,
@@ -121,7 +140,7 @@
       ].join("\n");
     }
 
-    $writeCssModuleFor(id, source, modulesCache, pakInstanceId = "Pak", sortedJsModules = [], sortedCssModules = []) {
+    $writeCssModuleFor(id, source, driversJson, modulesCache, pakInstanceId = "Pak", sortedJsModules = [], sortedCssModules = []) {
       PakCompiler.trace("PakCompiler.prototype.$writeCssModuleFor");
       return [
         `/* @css.module[${sortedCssModules.length}] = ${id} */`,
@@ -152,67 +171,106 @@
       return require("fs").promises.readFile(__filename, "utf8");
     }
 
-    async $writeJsPakSource(source) {
+    async $writeJsPakSource(source, drivers) {
       PakCompiler.trace("PakCompiler.prototype.$writeJsPakSource");
       return [
         `// @module[main] = Pak`,
         `(function(PreviousPak) {`,
-        __PAK_SNIPPET__.OpaquePak,
+        __PAK_SNIPPET__.OpaquePak.replace(this.constructor.symbols.$REGEX_FOR_DRIVERS, JSON.stringify(drivers, null, 2)),
         source,
         `})(typeof Pak !== "undefined" ? Pak : false)`,
       ].join("\n");
     }
 
-    async $buildJs(file, modulesCache = {}, pakInstanceId = "Pak", sortedJsModules = [], sortedCssModules = [], sortedHtmlModules = [], htmlTemplate = false) {
+    async $buildJs(...args) {
+      const [
+        file,
+        driversJson = {},
+        modulesCache = {},
+        pakInstanceId = "Pak",
+        sortedJsModules = [],
+        sortedCssModules = [],
+        sortedHtmlModules = [],
+        htmlTemplate = false
+      ] = args;
       PakCompiler.trace("PakCompiler.prototype.$buildJs");
       let source = await this.$fetchResource(file, modulesCache);
       let js = "";
       let css = "";
-      const dependencies = this.$getExplicitDependenciesFromSource(source, pakInstanceId);
+      const dependencies = this.$getExplicitDependenciesFromSource(source, driversJson, pakInstanceId);
       modulesCache[file] = PakCompiler.ModuleDescriptor.for({ source, exports: undefined });
       for (let indexDependency = 0; indexDependency < dependencies.length; indexDependency++) {
         const dependencyId = dependencies[indexDependency];
         Conditional_caching:
         if (!(dependencyId in modulesCache)) {
-          const [moreJs, moreCss] = await this.$build(dependencyId, modulesCache, pakInstanceId, sortedJsModules, sortedCssModules);
+          const [moreJs, moreCss] = await this.$buildAny(dependencyId, driversJson, modulesCache, pakInstanceId, sortedJsModules, sortedCssModules);
           js += moreJs;
           css += moreCss;
         }
       }
       sortedJsModules.push(file);
-      js += this.$writeJsModuleFor(file, source, modulesCache, pakInstanceId, sortedJsModules, sortedCssModules);
+      js += this.$writeJsModuleFor(file, source, driversJson, modulesCache, pakInstanceId, sortedJsModules, sortedCssModules);
       return [js, css];
     }
 
-    async $buildCss(file, modulesCache = {}, pakInstanceId = "Pak", sortedJsModules = [], sortedCssModules = [], sortedHtmlModules = [], htmlTemplate = false, canFail = false) {
+    async $buildCss(...args) {
+      const [
+        file,
+        driversJson = {},
+        modulesCache = {},
+        pakInstanceId = "Pak",
+        sortedJsModules = [],
+        sortedCssModules = [],
+        sortedHtmlModules = [],
+        htmlTemplate = false,
+        canFail = false
+      ] = args;
       PakCompiler.trace("PakCompiler.prototype.$buildCss");
       let source = await this.$fetchResource(file, modulesCache);
       let js = "";
       let css = "";
-      const dependencies = this.$getExplicitDependenciesFromSource(source, pakInstanceId);
+      const dependencies = this.$getExplicitDependenciesFromSource(source, driversJson, pakInstanceId);
       modulesCache[file] = PakCompiler.ModuleDescriptor.for({ source, exports: undefined });
       for (let indexDependency = 0; indexDependency < dependencies.length; indexDependency++) {
         const dependencyId = dependencies[indexDependency];
         Conditional_caching:
         if (!(dependencyId in modulesCache)) {
-          const [moreJs, moreCss] = await this.$build(dependencyId, modulesCache, pakInstanceId, sortedJsModules, sortedCssModules);
+          const [moreJs, moreCss] = await this.$buildAny(dependencyId, driversJson, modulesCache, pakInstanceId, sortedJsModules, sortedCssModules);
           js += moreJs;
           css += moreCss;
         }
       }
       sortedCssModules.push(file);
-      css += this.$writeCssModuleFor(file, source, modulesCache, pakInstanceId, sortedJsModules, sortedCssModules);
+      css += this.$writeCssModuleFor(file, source, driversJson, modulesCache, pakInstanceId, sortedJsModules, sortedCssModules);
       return [js, css];
     }
 
-    async $buildHtml(file, modulesCache, pakInstanceId, sortedJsModules, sortedCssModules, sortedHtmlModules) {
+    async $buildHtml(...args) {
+      const [
+        file,
+        driversJson = {},
+        modulesCache = {},
+        pakInstanceId = "Pak",
+        sortedJsModules = [],
+        sortedCssModules = [],
+        sortedHtmlModules = [],
+      ] = args;
       PakCompiler.trace("PakCompiler.prototype.$buildHtml");
       const text = await this.$fetchResource(file, modulesCache);
       sortedHtmlModules.push(file);
       return text;
     }
 
-    async $build(file, modulesCache = {}, pakInstanceId = "Pak", sortedJsModules = [], sortedCssModules = [], sortedHtmlModules = []) {
+    async $buildAny(...args) {
+      const [
+        file,
+        driversJson = {},
+        modulesCache = {},
+        pakInstanceId = "Pak",
+        sortedJsModules = [],
+        sortedCssModules = [],
+        sortedHtmlModules = []
+      ] = args;
       PakCompiler.trace("PakCompiler.prototype.$build");
       const fileExtension = file.split(".").pop();
       let html = "";
@@ -220,40 +278,77 @@
       let js = "";
       if (fileExtension === "html") {
         const fileUnextended = file.replace(/\.html$/g, "");
-        html += await this.$buildHtml(file, modulesCache, pakInstanceId, sortedJsModules, sortedCssModules, sortedHtmlModules);
+        html += await this.$buildHtml(file, driversJson, modulesCache, pakInstanceId, sortedJsModules, sortedCssModules, sortedHtmlModules);
         try {
-          const [moreJs2, moreCss2] = await this.$buildCss(fileUnextended + ".css", modulesCache, pakInstanceId, sortedJsModules, sortedCssModules, sortedHtmlModules, html, true);
+          const [moreJs2, moreCss2] = await this.$buildCss(fileUnextended + ".css", driversJson, modulesCache, pakInstanceId, sortedJsModules, sortedCssModules, sortedHtmlModules, html, true);
           css += moreCss2;
           js += moreJs2;
         } catch (error) {
           // @OK: css can fail
         }
-        const [moreJs3, moreCss3] = await this.$buildJs(fileUnextended + ".js", modulesCache, pakInstanceId, sortedJsModules, sortedCssModules, html);
+        const [moreJs3, moreCss3] = await this.$buildJs(fileUnextended + ".js", driversJson, modulesCache, pakInstanceId, sortedJsModules, sortedCssModules, html);
         css += moreCss3;
         js += moreJs3.replace("$template", JSON.stringify(html));
       } else if (fileExtension === "css") {
-        const [moreJs2, moreCss2] = await this.$buildCss(file, modulesCache, pakInstanceId, sortedJsModules, sortedCssModules);
+        const [moreJs2, moreCss2] = await this.$buildCss(file, driversJson, modulesCache, pakInstanceId, sortedJsModules, sortedCssModules);
         css += moreCss2;
         js += moreJs2;
       } else if (fileExtension === "js") {
-        const [moreJs, moreCss] = await this.$buildJs(file, modulesCache, pakInstanceId, sortedJsModules, sortedCssModules);
+        const [moreJs, moreCss] = await this.$buildJs(file, driversJson, modulesCache, pakInstanceId, sortedJsModules, sortedCssModules);
         css += moreCss;
         js += moreJs;
       } else if (fileExtension === "json") {
-        js += await this.$buildJson(file, modulesCache, pakInstanceId, sortedJsModules, sortedCssModules);
+        js += await this.$buildJson(file, driversJson, modulesCache, pakInstanceId, sortedJsModules, sortedCssModules);
       } else if (fileExtension === "png") {
-        js += await this.$buildUnknownExtension(file, modulesCache, pakInstanceId, sortedJsModules, sortedCssModules);
+        js += await this.$buildUnknownExtension(file, driversJson, modulesCache, pakInstanceId, sortedJsModules, sortedCssModules);
       }
       return [js, css, sortedJsModules, sortedCssModules, sortedHtmlModules];
     }
 
-    async build(file, modulesCache = {}, settings = {}, pakInstanceId = "Pak") {
+    $resolveAlias(id, drivers = {}) {
+      PakCompiler.trace("PakCompiler.prototype.$resolveAlias");
+      if (!drivers.alias) {
+        return id;
+      }
+      for (const alias in drivers.alias) {
+        if (id.startsWith(alias)) {
+          return id.replace(alias, drivers.alias[alias]);
+        }
+      }
+      return id;
+    }
+
+    $getDrivers() {
+      if (this.drivers) {
+        return this.drivers;
+      }
+      return this.$fetchResource(this.basedir + "/drivers.json").then((text) => {
+        if(text instanceof Error) throw error;
+        this.drivers = JSON.parse(text);
+        return this.drivers;
+      }).catch((error) => {
+        if(error.message.startsWith("ENOENT:")) {
+          console.log(`[!] Missing «drivers.json» for ${this.basedir} on «PakCompiler.prototype.$getDrivers»`);
+          return {};
+        }
+        console.log(`[!!] Unknown error fetching «drivers.json» for ${this.basedir} on «PakCompiler.prototype.$getDrivers»`, error);
+        return {};
+      });
+    }
+
+    async build(file, options = {}) {
+      const {
+        modulesCache = {},
+        settings = {},
+        pakInstanceId = "Pak",
+      } = options;
       PakCompiler.trace("PakCompiler.prototype.build");
       const start = new Date();
-      const [originalJs, originalCss, jsModules, cssModules, htmlModules] = await this.$build(file, modulesCache, pakInstanceId);
+      const drivers = await this.$getDrivers();
+      const [originalJs, originalCss, jsModules, cssModules, htmlModules] = await this.$buildAny(file, drivers, {}, pakInstanceId);
       let js = originalJs;
       let css = originalCss;
-      js = await this.$writeJsPakSource(js) + "\n";
+      js = await this.$writeJsPakSource(js, drivers) + "\n";
       if (typeof beautifier !== "undefined") {
         js = beautifier.js(js, { indent_size: 2 });
         css = beautifier.css(css, { indent_size: 2 });
