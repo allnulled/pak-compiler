@@ -9,6 +9,7 @@ Tipo webpack, rollup o browserify.
   - [Instrucciones](#instrucciones)
   - [Directorios](#directorios)
   - [Uso](#uso)
+  - [Ficheros](#ficheros)
 
 ## Instrucciones
 
@@ -25,6 +26,10 @@ Tipo webpack, rollup o browserify.
 ## Uso
 
 Se trata de personalizar el loop de desarrollo.
+
+Herramientas en proceso.
+
+## Ficheros
 
 - `dev.sh`:
    - solo lectura.
