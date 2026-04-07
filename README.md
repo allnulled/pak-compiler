@@ -7,6 +7,7 @@ Tipo webpack, rollup o browserify.
 - [pak-compiler](#pak-compiler)
   - [Índice](#índice)
   - [Instalar](#instalar)
+  - [Interfaz de línea de comandos](#interfaz-de-línea-de-comandos)
   - [Uso](#uso)
   - [Instrucciones de lectura del documento](#instrucciones-de-lectura-del-documento)
   - [Contextualización](#contextualización)
@@ -21,13 +22,35 @@ Tipo webpack, rollup o browserify.
 ```sh
 git clone https://github.com/allnulled/pak-compiler.git .
 npm install
+npm link
 ```
+
+Requiere [`refrescador`](https://github.com/allnulled/refrescador) en línea de comandos, que ahora mismo no está subido a `npm`.
+
+## Interfaz de línea de comandos
+
+En proceso, pero:
+
+- El comando `pak` puedes instalarlo con `npm link`.
+- Permite:
+   - `pak init ${PATH=.}`
+      - sirve para crear un proyecto desde cero
+   - `pak compile ${PROJECT}`
+      - `--entry ${FILE=main.js}`
+      - se basa en `@@/projects/${PROJECT}/${FILE}`
+      - sirve para crear el `@@/dist/${PROJECT}/${FILE}.dist.js` y `~.css`.
+   - `pak run ${PROJECT}`
+      - `--entry ${FILE=main.js}`
+      - `--mode ${MODE=compile|eval}`
+      - se basa en `@@/projects/${PROJECT}/${FILE}`
+      - sirve para crear el `@@/dist/${PROJECT}/${FILE}.dist.js` y `~.css`.
+      - y luego ejecutarlo:
+         - sea con `require` el fichero
+         - sea con `eval` el texto
 
 ## Uso
 
 Se trata de personalizar el loop de desarrollo.
-
-Herramientas en proceso.
 
 ## Instrucciones de lectura del documento
 
@@ -103,7 +126,7 @@ Herramientas en proceso.
       - porque te pueden destruir la funcionalidad de la aplicación
       - y se hacen irrasterables si la aplicación empieza a hacerse grande
       - porque ni sabes de dónde viene ni tendrás forma de saberlo depende de cómo
-      - pasa poco, pero cuando pasa es un *killer*
+      - pasa poco, pero cuando pasa, *hay que hacerse experto en V8 para saber por qué*
 
 ## Directorios
 
@@ -149,7 +172,9 @@ Personaliza los comandos `-x` para tener máximo control de tu *pipebuilder*.
 - Es personalizable
 - Es visible tanto en compilación como en runtime
    - Es un objeto alcanzable con `Pak.drivers` en runtime
-   - Es un objeto alcanzable con `PakCompiler.prototype.$getDrivers()`
+   - Es un objeto alcanzable con `PakCompiler.prototype.$getDrivers()` en compilación
       - Aquí lo toma siempre de `@@/drivers.json`
-      - Solo hay 1 `drivers.json` por instancia de `PakCompiler`
+      - Solo hay 1 `drivers.json` por instancia de `PakCompiler` (eso implica el `@@` que es el `basedir` de la instancia)
+
+
 

@@ -1,6 +1,6 @@
-- tema cli
-   - pak build ${proyecto}
-      - opción --file main.js
-   - pak run ${comando}
-      
-   - pak init ${ruta}
+- [ ] El CLI
+   - [ ] `pak init ${PATH=.}`
+   - [ ] `pak compile ${PROYECTO}`
+      - [ ] `--entry ${FICHERO=main.js}`
+   - [ ] `pak run ${PROYECTO}`
+      - [ ] `--entry ${FICHERO=main.js}`
