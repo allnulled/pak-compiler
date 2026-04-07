@@ -35,12 +35,12 @@ En proceso, pero:
 - Permite:
    - `pak init ${PATH=.}`
       - sirve para crear un proyecto desde cero
-   - `pak compile ${PROJECT}`
-      - `--entry ${FILE=main.js}`
+   - `pak compile ${PROJECT=default}`
+      - `--file ${FILE=main.js}`
       - se basa en `@@/projects/${PROJECT}/${FILE}`
       - sirve para crear el `@@/dist/${PROJECT}/${FILE}.dist.js` y `~.css`.
    - `pak run ${PROJECT}`
-      - `--entry ${FILE=main.js}`
+      - `--file ${FILE=main.js}`
       - `--mode ${MODE=compile|eval}`
       - se basa en `@@/projects/${PROJECT}/${FILE}`
       - sirve para crear el `@@/dist/${PROJECT}/${FILE}.dist.js` y `~.css`.

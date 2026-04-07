@@ -1,6 +1,6 @@
 - [ ] El CLI
+   - [x] `pak build ${PROYECTO}`
+      - [x] `--file ${FICHERO=main.js}`
+   - [x] `pak run ${PROYECTO}`
+      - [x] `--file ${FICHERO=main.js}`
    - [ ] `pak init ${PATH=.}`
-   - [ ] `pak compile ${PROYECTO}`
-      - [ ] `--entry ${FICHERO=main.js}`
-   - [ ] `pak run ${PROYECTO}`
-      - [ ] `--entry ${FICHERO=main.js}`

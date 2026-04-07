@@ -3,7 +3,7 @@
   "version": "1.0.0",
   "main": "pak-compiler.dist.js",
   "bin": {
-    "pak": "pak_modules/bin/build.js"
+    "pak": "pak_modules/bin/cli.js"
   },
   "scripts": {
     "dev": "node dev.sh",
