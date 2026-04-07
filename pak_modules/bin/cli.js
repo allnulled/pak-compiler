@@ -5,6 +5,8 @@ const path = require("path");
 const projectRoot = path.resolve(__dirname, "../..");
 const PakCompilerPath = path.resolve(projectRoot, "pak-compiler.dist.js");
 const PakCompiler = require(PakCompilerPath);
+const colorsPath = path.resolve(projectRoot, "pak_modules/src/command-line/colors.js");
+const colors = require(colorsPath);
 PakCompiler.global.setBasedir(path.resolve(projectRoot, "pak_modules"));
 const argumentsParser = require(PakCompiler.global.basedir + "/src/command-line/parse-args-into-object.js");
 const argv = [...process.argv];
@@ -24,6 +26,7 @@ if(!(command in commandsSchema)) {
   throw new Error(`Command «pak ${command}» is not available, only «${Object.keys(commandsSchema).join("|")}» on «pak»`);
 }
 const args1 = argumentsParser(args0, commandsSchema[command]);
+console.log(colors.style("yellow,bold,underline").text("Argumentos de pak:"));
 console.log(args1);
 // hasta aquí es cli
 const callback = require(__dirname + "/command/" + command + ".js");

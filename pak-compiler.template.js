@@ -67,6 +67,11 @@
       this.basedir = basedir;
       return this;
     }
+
+    getRelativePath(...subpaths) {
+      PakCompiler.trace("PakCompiler.prototype.getRelativePath");
+      return require("path").resolve(this.basedir, ...subpaths);
+    }
     
     // método seguro: devuelve String o Error
     $fetchResource(resource, modulesCache = this.modules) {
@@ -97,6 +102,7 @@
     static symbols = {
       $REGEX_FOR_REQUIRES: /([A-Za-z_$][A-Za-z0-9_$]*\.)?require\(([^\)]*)\)/g,
       $REGEX_FOR_DRIVERS: /__PAK_DRIVERS__/g,
+      $REGEX_FOR_ENTRY: /__PAK_ENTRY_ID__/g,
     };
 
     $resolveDriver(id, driversJson) {
@@ -173,12 +179,13 @@
       return require("fs").promises.readFile(__filename, "utf8");
     }
 
-    async $writeJsPakSource(source, drivers) {
+    async $writeJsPakSource(source, drivers, entry = "main") {
       PakCompiler.trace("PakCompiler.prototype.$writeJsPakSource");
       return [
         `// @module[main] = Pak`,
         `(function(globalPak) {`,
-        __PAK_SNIPPET__.PakHeader.replace(this.constructor.symbols.$REGEX_FOR_DRIVERS, JSON.stringify(drivers, null, 2)),
+        __PAK_SNIPPET__.PakHeader.replace(this.constructor.symbols.$REGEX_FOR_DRIVERS, JSON.stringify(drivers, null, 2))
+          .replace(this.constructor.symbols.$REGEX_FOR_ENTRY, JSON.stringify(entry)),
         source,
         __PAK_SNIPPET__.PakFooter,
         `})(typeof Pak !== "undefined" ? Pak : false)`,
@@ -195,12 +202,13 @@
         sortedJsModules = [],
         sortedCssModules = [],
         sortedHtmlModules = [],
-        htmlTemplate = false
+        htmlTemplate = false,
+        entry = "main"
       ] = args;
       let source = await this.$fetchResource(file, modulesCache);
       let js = "";
       let css = "";
-      const dependencies = this.$getExplicitDependenciesFromSource(source, driversJson, pakInstanceId);
+      const dependencies = this.$getExplicitDependenciesFromSource(source, driversJson, pakInstanceId, entry);
       modulesCache[file] = PakCompiler.ModuleDescriptor.for({ source, exports: undefined });
       for (let indexDependency = 0; indexDependency < dependencies.length; indexDependency++) {
         const dependencyId = dependencies[indexDependency];
@@ -227,12 +235,13 @@
         sortedCssModules = [],
         sortedHtmlModules = [],
         htmlTemplate = false,
-        canFail = false
+        canFail = false,
+        entry = "main",
       ] = args;
       let source = await this.$fetchResource(file, modulesCache);
       let js = "";
       let css = "";
-      const dependencies = this.$getExplicitDependenciesFromSource(source, driversJson, pakInstanceId);
+      const dependencies = this.$getExplicitDependenciesFromSource(source, driversJson, pakInstanceId, entry);
       modulesCache[file] = PakCompiler.ModuleDescriptor.for({ source, exports: undefined });
       for (let indexDependency = 0; indexDependency < dependencies.length; indexDependency++) {
         const dependencyId = dependencies[indexDependency];
@@ -347,12 +356,13 @@
         pakInstanceId = "Pak",
       } = options;
       PakCompiler.trace("PakCompiler.prototype.build");
+      const entry = file.replace(/\.js$/g, "").replace(/.*\//g, "");
       const start = new Date();
       const drivers = await this.$getDrivers();
       const [originalJs, originalCss, jsModules, cssModules, htmlModules] = await this.$buildAny(file, drivers, {}, pakInstanceId);
       let js = originalJs;
       let css = originalCss;
-      js = await this.$writeJsPakSource(js, drivers) + "\n";
+      js = await this.$writeJsPakSource(js, drivers, entry) + "\n";
       if (typeof beautifier !== "undefined") {
         js = beautifier.js(js, { indent_size: 2 });
         css = beautifier.css(css, { indent_size: 2 });

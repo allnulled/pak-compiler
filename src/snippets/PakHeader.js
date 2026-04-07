@@ -8,6 +8,7 @@ const Pak = {
     }
   },
   // API de Pak Modules: 2/3
+  entry: __PAK_ENTRY_ID__,
   modules: typeof globalPak === "object" ? Object.create(globalPak.modules) : {},
   require: function (originalId) {
     const id = Pak.resolveDriver(originalId);

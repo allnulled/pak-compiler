@@ -1,9 +1,10 @@
 // @pak-module:
 // - Source generated:
-//    - date:         Tue Apr 07 2026 21:54:20 GMT+0200 (hora de verano de Europa central)
-//    - time:         0.018 seconds
-//    - modules:      1
-//       - 0. Pak.require("projects/example/dev.js")
+//    - date:         Tue Apr 07 2026 23:24:48 GMT+0200 (hora de verano de Europa central)
+//    - time:         0.009 seconds
+//    - modules:      2
+//       - 0. Pak.require("04. Environment dependant modules test/environments/nodejs/module.js")
+//       - 1. Pak.require("04. Environment dependant modules test/entries/nodejs.js")
 //    - styles:       0
 //    - templates:    0
 // @module[main] = Pak
@@ -18,6 +19,7 @@
       }
     },
     // API de Pak Modules: 2/3
+    entry: "nodejs",
     modules: typeof globalPak === "object" ? Object.create(globalPak.modules) : {},
     require: function(originalId) {
       const id = Pak.resolveDriver(originalId);
@@ -34,7 +36,10 @@
     },
     // API de Pak Drivers: 3/3
     drivers: {
-      "math-addition": "src/maths/addition.js"
+      "drivers-test/first": "02. Drivers test/modules/first.js",
+      "drivers-test/second": "02. Drivers test/modules/second.js",
+      "drivers-test/third": "02. Drivers test/modules/third.js",
+      "drivers-test/modules": "02. Drivers test/modules"
     },
     driverIds: false,
     resolveDriver: function(id) {
@@ -57,19 +62,34 @@
   if (typeof global !== "undefined" && typeof global.Pak === "undefined") global.Pak = Pak;
   //////////////////////////////////////////////////////////////////////////////
 
-  // @module[1] = projects/example/dev.js
+  // @module[1] = 04. Environment dependant modules test/environments/nodejs/module.js
   (function(module) {
     try {
-      console.log("Hello from dev!!");
+      module.exports = "nodejs";
     } catch (error) {
-      console.log("⛔️ Error on module projects/example/dev.js\n  ", error);
+      console.log("⛔️ Error on module 04. Environment dependant modules test/environments/nodejs/module.js\n  ", error);
       throw error;
     } finally {
-      __LAST_PAK_RESULT__ = Pak.modules["projects/example/dev.js"] = module.exports;
+      __LAST_PAK_RESULT__ = Pak.modules["04. Environment dependant modules test/environments/nodejs/module.js"] = module.exports;
     }
   })({
     exports: undefined
   });
+  // @module[2] = 04. Environment dependant modules test/entries/nodejs.js
+  (function(module) {
+    try {
+      module.exports = Pak.require("04. Environment dependant modules test/environments/nodejs/module.js");
+    } catch (error) {
+      console.log("⛔️ Error on module 04. Environment dependant modules test/entries/nodejs.js\n  ", error);
+      throw error;
+    } finally {
+      __LAST_PAK_RESULT__ = Pak.modules["04. Environment dependant modules test/entries/nodejs.js"] = module.exports;
+    }
+  })({
+    exports: undefined
+  });
+
+  if (typeof module !== "undefined") module.exports = __LAST_PAK_RESULT__;
 
   return __LAST_PAK_RESULT__;
 

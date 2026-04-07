@@ -1,8 +1,8 @@
 // @pak-module:
 // - Source generated:
-//    - date:         Tue Apr 07 2026 03:24:14 GMT+0200 (hora de verano de Europa central)
-//    - time:         0.031 seconds
-//    - modules:      15
+//    - date:         Tue Apr 07 2026 23:25:48 GMT+0200 (hora de verano de Europa central)
+//    - time:         0.032 seconds
+//    - modules:      16
 //       - 0. Pak.require("01. Simple test/mod-a/mod-a1.js")
 //       - 1. Pak.require("01. Simple test/mod-a/mod-a2.js")
 //       - 2. Pak.require("01. Simple test/mod-a/mod-a3.js")
@@ -17,7 +17,8 @@
 //       - 11. Pak.require("02. Drivers test/modules/third.js")
 //       - 12. Pak.require("02. Drivers test/index.js")
 //       - 13. Pak.require("03. Evaluator test/index.js")
-//       - 14. Pak.require("build.js")
+//       - 14. Pak.require("04. Environment dependant modules test/index.js")
+//       - 15. Pak.require("build.js")
 //    - styles:       4
 //       - 0. Pak.require("01. Simple test/mod-a/styles-a.css")
 //       - 1. Pak.require("01. Simple test/mod-a/styles-a1.css")
@@ -36,6 +37,7 @@
       }
     },
     // API de Pak Modules: 2/3
+    entry: "build",
     modules: typeof globalPak === "object" ? Object.create(globalPak.modules) : {},
     require: function(originalId) {
       const id = Pak.resolveDriver(originalId);
@@ -299,12 +301,60 @@
   })({
     exports: undefined
   });
-  // @module[15] = build.js
+  // @module[15] = 04. Environment dependant modules test/index.js
+  (function(module) {
+    try {
+      (async function main() {
+
+        const fs = require("fs");
+        const read = file => fs.promises.readFile(file, "utf8");
+        const write = (file, content) => fs.promises.writeFile(file, content, "utf8");
+        const assert = PakCompiler.assert;
+        // const payload = ""; // @OK: con esto, pasa ok
+        const payload = "-cross"; // @TODO: ahora tiene que pasar con esto
+        const outputs = await Promise.all([
+          PakCompiler.global.build(`04. Environment dependant modules test/entries${payload}/cli.js`),
+          PakCompiler.global.build(`04. Environment dependant modules test/entries${payload}/gui.js`),
+          PakCompiler.global.build(`04. Environment dependant modules test/entries${payload}/server.js`),
+          PakCompiler.global.build(`04. Environment dependant modules test/entries${payload}/nodejs.js`),
+          PakCompiler.global.build(`04. Environment dependant modules test/entries${payload}/browser.js`)
+        ]);
+        const [cli, gui, server, nodejs, browser] = outputs;
+        await write(`${__dirname}/04. Environment dependant modules test/environments/cli/test.cli-dist.js`, cli.js);
+        await write(`${__dirname}/04. Environment dependant modules test/environments/gui/test.gui-dist.js`, gui.js);
+        await write(`${__dirname}/04. Environment dependant modules test/environments/server/test.server-dist.js`, server.js);
+        await write(`${__dirname}/04. Environment dependant modules test/environments/nodejs/test.nodejs-dist.js`, nodejs.js);
+        await write(`${__dirname}/04. Environment dependant modules test/environments/browser/test.browser-dist.js`, browser.js);
+        const cliModule = require(`${__dirname}/04. Environment dependant modules test/environments/cli/test.cli-dist.js`);
+        const guiModule = require(`${__dirname}/04. Environment dependant modules test/environments/gui/test.gui-dist.js`);
+        const serverModule = require(`${__dirname}/04. Environment dependant modules test/environments/server/test.server-dist.js`);
+        const nodejsModule = require(`${__dirname}/04. Environment dependant modules test/environments/nodejs/test.nodejs-dist.js`);
+        const browserModule = require(`${__dirname}/04. Environment dependant modules test/environments/browser/test.browser-dist.js`);
+        assert(cliModule === "cli", "Module cli should be 'cli'");
+        assert(guiModule === "gui", "Module gui should be 'gui'");
+        assert(serverModule === "server", "Module server should be 'server'");
+        assert(nodejsModule === "nodejs", "Module nodejs should be 'nodejs'");
+        assert(browserModule === "browser", "Module browser should be 'browser'");
+
+        console.log(Pak.entry);
+
+      })();
+    } catch (error) {
+      console.log("⛔️ Error on module 04. Environment dependant modules test/index.js\n  ", error);
+      throw error;
+    } finally {
+      __LAST_PAK_RESULT__ = Pak.modules["04. Environment dependant modules test/index.js"] = module.exports;
+    }
+  })({
+    exports: undefined
+  });
+  // @module[16] = build.js
   (function(module) {
     try {
       Pak.require("01. Simple test/index.js");
       Pak.require("02. Drivers test/index.js");
       Pak.require("03. Evaluator test/index.js");
+      Pak.require("04. Environment dependant modules test/index.js");
     } catch (error) {
       console.log("⛔️ Error on module build.js\n  ", error);
       throw error;
@@ -314,6 +364,8 @@
   })({
     exports: undefined
   });
+
+  if (typeof module !== "undefined") module.exports = __LAST_PAK_RESULT__;
 
   return __LAST_PAK_RESULT__;
 
