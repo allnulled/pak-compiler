@@ -17,6 +17,7 @@ Tipo webpack, rollup o browserify.
     - [Fichero configurable dev.sh](#fichero-configurable-devsh)
     - [Fichero configurable drivers.json](#fichero-configurable-driversjson)
     - [Modulación según entrada](#modulación-según-entrada)
+    - [Fuera de pak\_modules](#fuera-de-pak_modules)
 
 ## Instalar
 
@@ -188,9 +189,9 @@ Personaliza los comandos `-x` para tener máximo control de tu *pipebuilder*.
    - aplicaciones de servidores
    - otras
 - Cuando haces `Pak.require("mi/modulo.js")` puedes tener esta condición en cuenta:
-   - Si haces `Pak.require("mi/!{entry}/modulo.js")` le estás diciendo
-      - *utiliza el **nombre del fichero de entrada de la compilación** como switcher de carpetas
-      - el nombre dentro de `@@/projects/{entry}.js`
+   - Si haces `Pak.require("mi/!{entry}/modulo.js")` le estás diciendo:
+      - *utiliza el **nombre del fichero de entrada de la compilación** como switcher de carpetas*
+      - el nombre dentro de `@@/projects/{project}/{entry}.js`
       - por defecto, siempre debería ser `main.js` el fichero de entrada
          - pero puede haber más, y sirven para poder hacer estos switchers
 - Para usarlo tienes que llamar al fichero de entrada de la compilación con el mismo nombre de la carpeta (o fichero) que quieras switchear según entorno
@@ -201,3 +202,9 @@ Personaliza los comandos `-x` para tener máximo control de tu *pipebuilder*.
       - Esto también forzará que la compilación siga siempre 1 solo criterio por proyecto
 
 
+### Fuera de pak_modules
+
+- El usar la carpeta de `pak_modules` es una recomendación, pero no es obligatorio
+   - Si quieres ver un ejemplo de cómo no usar esta carpeta:
+      - puedes ver los `test/test.js` donde no se utiliza esta carpeta
+      - sino otra, la de `test` mismamente
