@@ -1,5 +1,4 @@
 (async function main() {
-
   const fs = require("fs");
   const read = file => fs.promises.readFile(file, "utf8");
   const write = (file, content) => fs.promises.writeFile(file, content, "utf8");

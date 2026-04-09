@@ -1,8 +1,8 @@
 // @pak-module:
 // - Source generated:
-//    - date:         Thu Apr 09 2026 11:49:21 GMT+0200 (hora de verano de Europa central)
-//    - time:         0.035 seconds
-//    - modules:      16
+//    - date:         Thu Apr 09 2026 16:19:52 GMT+0200 (hora de verano de Europa central)
+//    - time:         0.042 seconds
+//    - modules:      17
 //       - 0. Pak.require("01. Simple test/mod-a/mod-a1.js")
 //       - 1. Pak.require("01. Simple test/mod-a/mod-a2.js")
 //       - 2. Pak.require("01. Simple test/mod-a/mod-a3.js")
@@ -18,7 +18,8 @@
 //       - 12. Pak.require("02. Drivers test/index.js")
 //       - 13. Pak.require("03. Evaluator test/index.js")
 //       - 14. Pak.require("04. Environment dependant modules test/index.js")
-//       - 15. Pak.require("build.js")
+//       - 15. Pak.require("05. Command line interface/index.js")
+//       - 16. Pak.require("build.js")
 //    - styles:       4
 //       - 0. Pak.require("01. Simple test/mod-a/styles-a.css")
 //       - 1. Pak.require("01. Simple test/mod-a/styles-a1.css")
@@ -308,7 +309,6 @@
   (function(module) {
     try {
       (async function main() {
-
         const fs = require("fs");
         const read = file => fs.promises.readFile(file, "utf8");
         const write = (file, content) => fs.promises.writeFile(file, content, "utf8");
@@ -348,13 +348,69 @@
   })({
     exports: undefined
   });
-  // @module[16] = build.js
+  // @module[16] = 05. Command line interface/index.js
+  (function(module) {
+    try {
+      (async function main() {
+        const fs = require("fs");
+        const timers = require("timers");
+        const child_process = require("child_process");
+        const read = file => fs.promises.readFile(file, "utf8");
+        const write = (file, content) => fs.promises.writeFile(file, content, "utf8");
+        const assert = PakCompiler.assert;
+        try {
+          await fs.promises.rm(`${__dirname}/05. Command line interface/nowatch`, {
+            recursive: true
+          });
+        } catch (error) {
+          // @OK because it should not exist already
+        }
+        // await timers.promises.setTimeout(200);
+        await fs.promises.mkdir(`${__dirname}/05. Command line interface/nowatch`);
+        await fs.promises.mkdir(`${__dirname}/05. Command line interface/nowatch/example-1`);
+        await fs.promises.mkdir(`${__dirname}/05. Command line interface/nowatch/example-2`);
+        await fs.promises.mkdir(`${__dirname}/05. Command line interface/nowatch/example-3`);
+        child_process.execSync(`pak init`, {
+          cwd: `${__dirname}/05. Command line interface/nowatch/example-1`,
+          stdio: "inherit"
+        });
+        child_process.execSync(`pak init`, {
+          cwd: `${__dirname}/05. Command line interface/nowatch/example-2`,
+          stdio: "inherit"
+        });
+        child_process.execSync(`pak init`, {
+          cwd: `${__dirname}/05. Command line interface/nowatch/example-3`,
+          stdio: "inherit"
+        });
+        await fs.promises.mkdir(`${__dirname}/05. Command line interface/nowatch/example-3/pak_modules/projects/default`);
+        await write(`${__dirname}/05. Command line interface/nowatch/example-3/hello.txt`, "");
+        await write(`${__dirname}/05. Command line interface/nowatch/example-3/pak_modules/projects/default/main.js`, "require('fs').writeFileSync(__dirname + '/hello.txt', 'hello from example 3', 'utf8');", "utf8");
+        child_process.execSync(`pak run`, {
+          cwd: `${__dirname}/05. Command line interface/nowatch/example-3`,
+          stdio: "inherit"
+        });
+        PakCompiler.assert("hello from example 3" === await read(`${__dirname}/05. Command line interface/nowatch/example-3/pak_modules/dist/default/hello.txt`), "File hello.txt should be fulfilled adecuately");
+        await fs.promises.rm(`${__dirname}/05. Command line interface/nowatch`, {
+          recursive: true
+        });
+      })();
+    } catch (error) {
+      console.log("⛔️ Error on module 05. Command line interface/index.js\n  ", error);
+      throw error;
+    } finally {
+      __LAST_PAK_RESULT__ = Pak.modules["05. Command line interface/index.js"] = module.exports;
+    }
+  })({
+    exports: undefined
+  });
+  // @module[17] = build.js
   (function(module) {
     try {
       Pak.require("01. Simple test/index.js");
       Pak.require("02. Drivers test/index.js");
       Pak.require("03. Evaluator test/index.js");
       Pak.require("04. Environment dependant modules test/index.js");
+      Pak.require("05. Command line interface/index.js");
     } catch (error) {
       console.log("⛔️ Error on module build.js\n  ", error);
       throw error;

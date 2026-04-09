@@ -7,17 +7,18 @@ Tipo webpack, rollup o browserify.
 - [pak-compiler](#pak-compiler)
   - [Índice](#índice)
   - [Instalar](#instalar)
-  - [Interfaz de línea de comandos](#interfaz-de-línea-de-comandos)
   - [Uso](#uso)
-  - [Instrucciones de lectura del documento](#instrucciones-de-lectura-del-documento)
-  - [Contextualización](#contextualización)
-    - [Evaluador opcional](#evaluador-opcional)
-  - [Directorios](#directorios)
-  - [Ficheros](#ficheros)
-    - [Fichero configurable dev.sh](#fichero-configurable-devsh)
-    - [Fichero configurable drivers.json](#fichero-configurable-driversjson)
-    - [Modulación según entrada](#modulación-según-entrada)
-    - [Fuera de pak\_modules](#fuera-de-pak_modules)
+  - [Interfaz de línea de comandos](#interfaz-de-línea-de-comandos)
+  - [Explicaciones](#explicaciones)
+    - [Instrucciones de lectura del documento](#instrucciones-de-lectura-del-documento)
+    - [Contextualización](#contextualización)
+      - [Evaluador opcional](#evaluador-opcional)
+    - [Directorios](#directorios)
+    - [Ficheros](#ficheros)
+      - [Fichero configurable dev.sh](#fichero-configurable-devsh)
+      - [Fichero configurable drivers.json](#fichero-configurable-driversjson)
+      - [Modulación según entrada](#modulación-según-entrada)
+      - [Fuera de pak\_modules](#fuera-de-pak_modules)
 
 ## Instalar
 
@@ -27,7 +28,21 @@ npm install
 npm link
 ```
 
-Requiere [`refrescador`](https://github.com/allnulled/refrescador) en línea de comandos, que ahora mismo no está subido a `npm`.
+Si no tienes [`refrescador`](https://github.com/allnulled/refrescador) en línea de comandos también necesitarías, **desde otra carpeta** ejecutar:
+
+```sh
+git clone https://github.com/allnulled/refrescador.git .
+npm install
+npm link
+```
+
+El `refrescador` se empalma en el fichero `dev.sh` que escucha cambios, y así puedes crear escuchadores y lanzar `pak` 
+
+## Uso
+
+Se trata de personalizar el loop de desarrollo con `refrescador` y `pak` para escuchar cambios + compilar + pasar tests.
+
+
 
 ## Interfaz de línea de comandos
 
@@ -50,17 +65,17 @@ En proceso, pero:
          - sea con `require` el fichero
          - sea con `eval` el texto
 
-## Uso
+## Explicaciones
 
-Se trata de personalizar el loop de desarrollo.
+A continuación se explica un poco cómo funciona por dentro `PakCompiler` (en compilación y opcionalmente en runtime) y `Pak` (en runtime).
 
-## Instrucciones de lectura del documento
+### Instrucciones de lectura del documento
 
 - El `@@` significa el `basedir` del `PakCompiler` que por defecto es `pak_modules`:
 - El `PakCompiler.prototype.setBasedir(basedir:String)` te permite cambiar este valor.
 - Este valor solo existe en compilación, no en runtime.
 
-## Contextualización
+### Contextualización
 
 - Hay 2 contextos principales:
    - compilación:
@@ -71,7 +86,7 @@ Se trata de personalizar el loop de desarrollo.
       - solo está accesible `Pak` y su `Pak.require("path/a/modulo.js")`.
       - puedes importar el `PakCompiler`, de esto trata la sección [Evaluador opcional](#evaluador-opcional).
 
-### Evaluador opcional
+#### Evaluador opcional
 
 - Opcionalmente, puedes compilar `pak-compiler.dist.js` dentro tu proyecto también
 - Permite evaluar js modularmente en *runtime* tanto en node.js como en browser
@@ -130,7 +145,7 @@ Se trata de personalizar el loop de desarrollo.
       - porque ni sabes de dónde viene ni tendrás forma de saberlo depende de cómo
       - pasa poco, pero cuando pasa, *hay que hacerse experto en V8 para saber por qué*
 
-## Directorios
+### Directorios
 
 - `@@/bin`: comandos accesibles desde `pak ${COMANDO}`.
 - `@@/dist`: ficheros compilados separados por proyecto. **Solo lectura**.
@@ -138,11 +153,11 @@ Se trata de personalizar el loop de desarrollo.
 - `@@/projects`: distintas entradas de proyectos paralelos.
 - `@@/src`: aquí desarrollas el código realmente.
 
-## Ficheros
+### Ficheros
 
 Si haces un `git clone` o un `pak init`, hay algunos ficheros que tienes que tener en cuenta:
 
-### Fichero configurable dev.sh
+#### Fichero configurable dev.sh
 
 - Inicia el **loop de desarrollo**.
 - Es personalizable.
@@ -152,7 +167,7 @@ Si haces un `git clone` o un `pak init`, hay algunos ficheros que tienes que ten
 Ejemplo:
 
 ```bash
-#!/usr/bin/bash
+##!/usr/bin/bash
 
 refrescador \
   -w . \
@@ -167,7 +182,7 @@ refrescador \
 
 Personaliza los comandos `-x` para tener máximo control de tu *pipebuilder*.
 
-### Fichero configurable drivers.json
+#### Fichero configurable drivers.json
 
 - Indica shortnames de rutas o ficheros
    - Siempre con preferencia por el alias más largo
@@ -178,7 +193,7 @@ Personaliza los comandos `-x` para tener máximo control de tu *pipebuilder*.
       - Aquí lo toma siempre de `@@/drivers.json`
       - Solo hay 1 `drivers.json` por instancia de `PakCompiler` (eso implica el `@@` que es el `basedir` de la instancia)
 
-### Modulación según entrada
+#### Modulación según entrada
 
 - JavaScript soporta muchos entornos y aplicaciones objetivo, y puede que convivan en el mismo proyecto:
    - node.js
@@ -202,7 +217,7 @@ Personaliza los comandos `-x` para tener máximo control de tu *pipebuilder*.
       - Esto también forzará que la compilación siga siempre 1 solo criterio por proyecto
 
 
-### Fuera de pak_modules
+#### Fuera de pak_modules
 
 - El usar la carpeta de `pak_modules` es una recomendación, pero no es obligatorio
    - Si quieres ver un ejemplo de cómo no usar esta carpeta:

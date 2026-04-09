@@ -1,7 +1,7 @@
 // @pak-module:
 // - Source generated:
-//    - date:         Tue Apr 07 2026 03:41:34 GMT+0200 (hora de verano de Europa central)
-//    - time:         0.02 seconds
+//    - date:         Thu Apr 09 2026 16:15:09 GMT+0200 (hora de verano de Europa central)
+//    - time:         0.021 seconds
 //    - modules:      3
 //       - 0. Pak.require("src/maths/addition.js")
 //       - 1. Pak.require("src/hello.js")
@@ -20,6 +20,7 @@
       }
     },
     // API de Pak Modules: 2/3
+    entry: "main",
     modules: typeof globalPak === "object" ? Object.create(globalPak.modules) : {},
     require: function(originalId) {
       const id = Pak.resolveDriver(originalId);
@@ -110,6 +111,8 @@
   })({
     exports: undefined
   });
+
+  if (typeof module !== "undefined") module.exports = __LAST_PAK_RESULT__;
 
   return __LAST_PAK_RESULT__;
 

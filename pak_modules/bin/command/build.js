@@ -2,6 +2,8 @@ const fs = require("fs");
 const path = require("path");
 
 module.exports = async function (argsInput, utils) {
+  const { projectRoot } = utils;
+  const findClosestPakProjectDirectory = require(`${projectRoot}/pak_modules/src/pak-utils/findClosestPakProjectDirectory.js`);
   const args = {
     file: argsInput.file && argsInput.file.length ? argsInput.file[0].replace(/\.js$/g, "") : "main",
     command: argsInput._[0] || "build",
@@ -15,11 +17,17 @@ module.exports = async function (argsInput, utils) {
   // Compilas el proyecto:
   const command = args.command;
   const project = args.project;
+  const output = args.output || null;
+  const projectDir = await findClosestPakProjectDirectory();
+  const pakModulesDir = path.resolve(projectDir, "pak_modules");
+  PakCompiler.global.setBasedir(pakModulesDir);
+  const outDir = output ?? path.resolve(pakModulesDir, "dist", project);// path.resolve(__dirname, "../../dist", project);
+  const inDir = findClosestPakProjectDirectory();
   const file = args.file;
+  console.log(utils.colors.style("green,bold").text(`[*] Iniciando compilación de:\n  - ${file}`));
   const out = await PakCompiler.global.build(`projects/${project}/${file}.js`);
   // Persistes los distribuibles:
   const { js, css } = out;
-  const outDir = path.resolve(__dirname, "../../dist", project);
   const outFileUnextended = path.resolve(outDir, file);
   const outJsFile = `${outFileUnextended}.dist.js`;
   const outCssFile = `${outFileUnextended}.dist.css`;
@@ -30,6 +38,14 @@ module.exports = async function (argsInput, utils) {
   }
   await fs.promises.writeFile(outJsFile, js, "utf8");
   await fs.promises.writeFile(outCssFile, css, "utf8");
+  console.log(utils.colors.style("green,bold").text(`[*] Ficheros compilados en:\n  - ${outJsFile}\n  - ${outCssFile}`));
   // Retornas
-  return { dist: { js, css } };
+  return {
+    dist: {
+      js,
+      css,
+      jsFile: outJsFile,
+      cssFile: outCssFile,
+    }
+  };
 };
