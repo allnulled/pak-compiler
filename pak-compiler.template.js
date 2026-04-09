@@ -72,10 +72,16 @@
       PakCompiler.trace("PakCompiler.prototype.getRelativePath");
       return require("path").resolve(this.basedir, ...subpaths);
     }
+
+    $resolveEntry(file, entry = "main") {
+      PakCompiler.trace("PakCompiler.prototype.$resolveEntry");
+      return file.replace(/\!\{ *entry *\}/g, entry);
+    }
     
     // método seguro: devuelve String o Error
-    $fetchResource(resource, modulesCache = this.modules) {
-      PakCompiler.trace("PakCompiler.prototype.$fetchResource");
+    fetchResource(resourceBrute, modulesCache = this.modules, entry = "main") {
+      PakCompiler.trace("PakCompiler.prototype.fetchResource");
+      const resource = this.$resolveEntry(resourceBrute, entry);
       PakCompiler.trace("[fetching] " + resource);
       if (resource in modulesCache) {
         return modulesCache[resource];
@@ -202,10 +208,9 @@
         sortedJsModules = [],
         sortedCssModules = [],
         sortedHtmlModules = [],
-        htmlTemplate = false,
         entry = "main"
       ] = args;
-      let source = await this.$fetchResource(file, modulesCache);
+      let source = await this.fetchResource(file, modulesCache, entry);
       let js = "";
       let css = "";
       const dependencies = this.$getExplicitDependenciesFromSource(source, driversJson, pakInstanceId, entry);
@@ -214,7 +219,8 @@
         const dependencyId = dependencies[indexDependency];
         Conditional_caching:
         if (!(dependencyId in modulesCache)) {
-          const [moreJs, moreCss] = await this.$buildAny(dependencyId, driversJson, modulesCache, pakInstanceId, sortedJsModules, sortedCssModules);
+          // @ok: entry task
+          const [moreJs, moreCss] = await this.$buildAny(dependencyId, driversJson, modulesCache, pakInstanceId, sortedJsModules, sortedCssModules, sortedHtmlModules, entry);
           js += moreJs;
           css += moreCss;
         }
@@ -234,11 +240,9 @@
         sortedJsModules = [],
         sortedCssModules = [],
         sortedHtmlModules = [],
-        htmlTemplate = false,
-        canFail = false,
         entry = "main",
       ] = args;
-      let source = await this.$fetchResource(file, modulesCache);
+      let source = await this.fetchResource(file, modulesCache, entry);
       let js = "";
       let css = "";
       const dependencies = this.$getExplicitDependenciesFromSource(source, driversJson, pakInstanceId, entry);
@@ -247,7 +251,7 @@
         const dependencyId = dependencies[indexDependency];
         Conditional_caching:
         if (!(dependencyId in modulesCache)) {
-          const [moreJs, moreCss] = await this.$buildAny(dependencyId, driversJson, modulesCache, pakInstanceId, sortedJsModules, sortedCssModules);
+          const [moreJs, moreCss] = await this.$buildAny(dependencyId, driversJson, modulesCache, pakInstanceId, sortedJsModules, sortedCssModules, sortedHtmlModules, entry);
           js += moreJs;
           css += moreCss;
         }
@@ -267,8 +271,9 @@
         sortedJsModules = [],
         sortedCssModules = [],
         sortedHtmlModules = [],
+        entry = "main",
       ] = args;
-      const text = await this.$fetchResource(file, modulesCache);
+      const text = await this.fetchResource(file, modulesCache, entry);
       sortedHtmlModules.push(file);
       return text;
     }
@@ -282,7 +287,8 @@
         pakInstanceId = "Pak",
         sortedJsModules = [],
         sortedCssModules = [],
-        sortedHtmlModules = []
+        sortedHtmlModules = [],
+        entry = "main",
       ] = args;
       const fileExtension = file.split(".").pop();
       let html = "";
@@ -290,44 +296,31 @@
       let js = "";
       if (fileExtension === "html") {
         const fileUnextended = file.replace(/\.html$/g, "");
-        html += await this.$buildHtml(file, driversJson, modulesCache, pakInstanceId, sortedJsModules, sortedCssModules, sortedHtmlModules);
+        html += await this.$buildHtml(file, driversJson, modulesCache, pakInstanceId, sortedJsModules, sortedCssModules, sortedHtmlModules, entry);
         try {
-          const [moreJs2, moreCss2] = await this.$buildCss(fileUnextended + ".css", driversJson, modulesCache, pakInstanceId, sortedJsModules, sortedCssModules, sortedHtmlModules, html, true);
+          const [moreJs2, moreCss2] = await this.$buildCss(fileUnextended + ".css", driversJson, modulesCache, pakInstanceId, sortedJsModules, sortedCssModules, sortedHtmlModules, entry);
           css += moreCss2;
           js += moreJs2;
         } catch (error) {
           // @OK: css can fail
         }
-        const [moreJs3, moreCss3] = await this.$buildJs(fileUnextended + ".js", driversJson, modulesCache, pakInstanceId, sortedJsModules, sortedCssModules, html);
+        const [moreJs3, moreCss3] = await this.$buildJs(fileUnextended + ".js", driversJson, modulesCache, pakInstanceId, sortedJsModules, sortedCssModules, sortedHtmlModules, entry);
         css += moreCss3;
         js += moreJs3.replace("$template", JSON.stringify(html));
       } else if (fileExtension === "css") {
-        const [moreJs2, moreCss2] = await this.$buildCss(file, driversJson, modulesCache, pakInstanceId, sortedJsModules, sortedCssModules);
+        const [moreJs2, moreCss2] = await this.$buildCss(file, driversJson, modulesCache, pakInstanceId, sortedJsModules, sortedCssModules, sortedHtmlModules, entry);
         css += moreCss2;
         js += moreJs2;
       } else if (fileExtension === "js") {
-        const [moreJs, moreCss] = await this.$buildJs(file, driversJson, modulesCache, pakInstanceId, sortedJsModules, sortedCssModules);
+        const [moreJs, moreCss] = await this.$buildJs(file, driversJson, modulesCache, pakInstanceId, sortedJsModules, sortedCssModules, sortedHtmlModules, entry);
         css += moreCss;
         js += moreJs;
       } else if (fileExtension === "json") {
-        js += await this.$buildJson(file, driversJson, modulesCache, pakInstanceId, sortedJsModules, sortedCssModules);
+        js += await this.$buildJson(file, driversJson, modulesCache, pakInstanceId, sortedJsModules, sortedCssModules, sortedHtmlModules, entry);
       } else if (fileExtension === "png") {
-        js += await this.$buildUnknownExtension(file, driversJson, modulesCache, pakInstanceId, sortedJsModules, sortedCssModules);
+        js += await this.$buildUnknownExtension(file, driversJson, modulesCache, pakInstanceId, sortedJsModules, sortedCssModules, sortedHtmlModules, entry);
       }
       return [js, css, sortedJsModules, sortedCssModules, sortedHtmlModules];
-    }
-
-    $resolveAlias(id, drivers = {}) {
-      PakCompiler.trace("PakCompiler.prototype.$resolveAlias");
-      if (!drivers.alias) {
-        return id;
-      }
-      for (const alias in drivers.alias) {
-        if (id.startsWith(alias)) {
-          return id.replace(alias, drivers.alias[alias]);
-        }
-      }
-      return id;
     }
 
     $getDrivers() {
@@ -335,7 +328,7 @@
       if (this.drivers) {
         return this.drivers;
       }
-      return this.$fetchResource(this.basedir + "/drivers.json").then((text) => {
+      return this.fetchResource(this.basedir + "/drivers.json").then((text) => {
         if(text instanceof Error) throw error;
         this.drivers = JSON.parse(text);
         return this.drivers;
@@ -356,10 +349,11 @@
         pakInstanceId = "Pak",
       } = options;
       PakCompiler.trace("PakCompiler.prototype.build");
+      // @NOTICE: La primera entrada NO PUEDE TENER !{entry} porque él es el entry:
       const entry = file.replace(/\.js$/g, "").replace(/.*\//g, "");
       const start = new Date();
       const drivers = await this.$getDrivers();
-      const [originalJs, originalCss, jsModules, cssModules, htmlModules] = await this.$buildAny(file, drivers, {}, pakInstanceId);
+      const [originalJs, originalCss, jsModules, cssModules, htmlModules] = await this.$buildAny(file, drivers, {}, pakInstanceId, [], [], [], entry);
       let js = originalJs;
       let css = originalCss;
       js = await this.$writeJsPakSource(js, drivers, entry) + "\n";

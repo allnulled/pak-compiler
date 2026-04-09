@@ -1,7 +1,7 @@
 // @pak-module:
 // - Source generated:
-//    - date:         Tue Apr 07 2026 23:25:48 GMT+0200 (hora de verano de Europa central)
-//    - time:         0.032 seconds
+//    - date:         Thu Apr 09 2026 11:49:21 GMT+0200 (hora de verano de Europa central)
+//    - time:         0.035 seconds
 //    - modules:      16
 //       - 0. Pak.require("01. Simple test/mod-a/mod-a1.js")
 //       - 1. Pak.require("01. Simple test/mod-a/mod-a2.js")
@@ -24,7 +24,10 @@
 //       - 1. Pak.require("01. Simple test/mod-a/styles-a1.css")
 //       - 2. Pak.require("01. Simple test/mod-a/styles-a2.css")
 //       - 3. Pak.require("01. Simple test/mod-a/styles-a3.css")
-//    - templates:    0
+//    - templates:    3
+//       - 0. Pak.require("01. Simple test/mod-b/componente-b1.html")
+//       - 1. Pak.require("01. Simple test/mod-b/componente-b2.html")
+//       - 2. Pak.require("01. Simple test/mod-b/componente-b3.html")
 // @module[main] = Pak
 (function(globalPak) {
   //////////////////////////////////////////////////////////////////////////////
@@ -310,8 +313,8 @@
         const read = file => fs.promises.readFile(file, "utf8");
         const write = (file, content) => fs.promises.writeFile(file, content, "utf8");
         const assert = PakCompiler.assert;
-        // const payload = ""; // @OK: con esto, pasa ok
-        const payload = "-cross"; // @TODO: ahora tiene que pasar con esto
+        let payload = ""; // @OK: con esto, pasa ok
+        payload = "-cross"; // @TODO: ahora tiene que pasar con esto
         const outputs = await Promise.all([
           PakCompiler.global.build(`04. Environment dependant modules test/entries${payload}/cli.js`),
           PakCompiler.global.build(`04. Environment dependant modules test/entries${payload}/gui.js`),
@@ -335,9 +338,6 @@
         assert(serverModule === "server", "Module server should be 'server'");
         assert(nodejsModule === "nodejs", "Module nodejs should be 'nodejs'");
         assert(browserModule === "browser", "Module browser should be 'browser'");
-
-        console.log(Pak.entry);
-
       })();
     } catch (error) {
       console.log("⛔️ Error on module 04. Environment dependant modules test/index.js\n  ", error);

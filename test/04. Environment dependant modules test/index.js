@@ -4,8 +4,8 @@
   const read = file => fs.promises.readFile(file, "utf8");
   const write = (file, content) => fs.promises.writeFile(file, content, "utf8");
   const assert = PakCompiler.assert;
-  // const payload = ""; // @OK: con esto, pasa ok
-  const payload = "-cross"; // @TODO: ahora tiene que pasar con esto
+  let payload = ""; // @OK: con esto, pasa ok
+  payload = "-cross"; // @TODO: ahora tiene que pasar con esto
   const outputs = await Promise.all([
     PakCompiler.global.build(`04. Environment dependant modules test/entries${payload}/cli.js`),
     PakCompiler.global.build(`04. Environment dependant modules test/entries${payload}/gui.js`),
@@ -29,7 +29,4 @@
   assert(serverModule === "server", "Module server should be 'server'");
   assert(nodejsModule === "nodejs", "Module nodejs should be 'nodejs'");
   assert(browserModule === "browser", "Module browser should be 'browser'");
-
-  console.log(Pak.entry);
-
 })();

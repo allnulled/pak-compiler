@@ -16,6 +16,7 @@ Tipo webpack, rollup o browserify.
   - [Ficheros](#ficheros)
     - [Fichero configurable dev.sh](#fichero-configurable-devsh)
     - [Fichero configurable drivers.json](#fichero-configurable-driversjson)
+    - [Modulación según entrada](#modulación-según-entrada)
 
 ## Instalar
 
@@ -36,14 +37,14 @@ En proceso, pero:
    - `pak init ${PATH=.}`
       - sirve para crear un proyecto desde cero
    - `pak compile ${PROJECT=default}`
-      - `--file ${FILE=main.js}`
-      - se basa en `@@/projects/${PROJECT}/${FILE}`
-      - sirve para crear el `@@/dist/${PROJECT}/${FILE}.dist.js` y `~.css`.
+      - `--entry ${ENTRY=main.js}`
+      - se basa en `@@/projects/${PROJECT}/${ENTRY}`
+      - sirve para crear el `@@/dist/${PROJECT}/${ENTRY}.dist.js` y `~.css`.
    - `pak run ${PROJECT}`
-      - `--file ${FILE=main.js}`
+      - `--entry ${ENTRY=main.js}`
       - `--mode ${MODE=compile|eval}`
-      - se basa en `@@/projects/${PROJECT}/${FILE}`
-      - sirve para crear el `@@/dist/${PROJECT}/${FILE}.dist.js` y `~.css`.
+      - se basa en `@@/projects/${PROJECT}/${ENTRY}`
+      - sirve para crear el `@@/dist/${PROJECT}/${ENTRY}.dist.js` y `~.css`.
       - y luego ejecutarlo:
          - sea con `require` el fichero
          - sea con `eval` el texto
@@ -176,5 +177,27 @@ Personaliza los comandos `-x` para tener máximo control de tu *pipebuilder*.
       - Aquí lo toma siempre de `@@/drivers.json`
       - Solo hay 1 `drivers.json` por instancia de `PakCompiler` (eso implica el `@@` que es el `basedir` de la instancia)
 
+### Modulación según entrada
+
+- JavaScript soporta muchos entornos y aplicaciones objetivo, y puede que convivan en el mismo proyecto:
+   - node.js
+   - browser
+   - gui con browser
+   - gui con gtk u otros
+   - aplicaciones de línea de comandos
+   - aplicaciones de servidores
+   - otras
+- Cuando haces `Pak.require("mi/modulo.js")` puedes tener esta condición en cuenta:
+   - Si haces `Pak.require("mi/!{entry}/modulo.js")` le estás diciendo
+      - *utiliza el **nombre del fichero de entrada de la compilación** como switcher de carpetas
+      - el nombre dentro de `@@/projects/{entry}.js`
+      - por defecto, siempre debería ser `main.js` el fichero de entrada
+         - pero puede haber más, y sirven para poder hacer estos switchers
+- Para usarlo tienes que llamar al fichero de entrada de la compilación con el mismo nombre de la carpeta (o fichero) que quieras switchear según entorno
+   - Esto significa que si tienes 7 entradas, tienes que hacer 7 procesos de compilación diferente
+   - No hay otra forma de integrar condicionales en la lógica de carga en tiempo de compilación
+      - El único switcher que se admite es el nombre del fichero de entrada
+      - Esto facilitará la comprensión lectora de la compilación (tanto para Pak como para el desarrollador)
+      - Esto también forzará que la compilación siga siempre 1 solo criterio por proyecto
 
 
