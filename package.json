@@ -6,8 +6,11 @@
     "pak": "pak_modules/bin/cli.js"
   },
   "scripts": {
-    "dev": "node dev.sh",
-    "test": "node test.js"
+    "build:pak:compiler": "node src/builder-for/pak-compiler.js",
+    "test:pak:compiler": "node src/builder-for/pak-compiler.js",
+    "build": "pak build currently",
+    "dev": "bash dev.sh",
+    "test": "node test/test.js"
   },
   "keywords": [],
   "author": "allnulled",

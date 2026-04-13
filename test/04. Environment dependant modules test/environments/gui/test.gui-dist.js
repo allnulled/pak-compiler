@@ -1,7 +1,7 @@
 // @pak-module:
 // - Source generated:
-//    - date:         Thu Apr 09 2026 16:19:53 GMT+0200 (hora de verano de Europa central)
-//    - time:         0.284 seconds
+//    - date:         Mon Apr 13 2026 19:36:52 GMT+0200 (hora de verano de Europa central)
+//    - time:         0.247 seconds
 //    - modules:      2
 //       - 0. Pak.require("04. Environment dependant modules test/environments/!{entry}/module.js")
 //       - 1. Pak.require("04. Environment dependant modules test/entries-cross/gui.js")

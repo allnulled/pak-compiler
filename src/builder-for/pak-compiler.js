@@ -31,7 +31,7 @@ const main = async function() {
   });
   fs.writeFileSync(`${__dirname}/../../pak-compiler.dist.js`, output, "utf8");
   const duration = ((new Date()) - start) / 1000;
-  trace("Took: " + duration + " seconds");
+  trace("Pak compiler compilation took: " + duration + " seconds");
   trace("End of: src/builder-for/pak-compiler.js");
 };
 

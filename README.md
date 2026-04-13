@@ -64,6 +64,10 @@ En proceso, pero:
       - y luego ejecutarlo:
          - sea con `require` el fichero
          - sea con `eval` el texto
+   - `pak list projects`
+   - `pak list sources`
+   - `pak list commands`
+   - `pak list distribuibles`
 
 ## Explicaciones
 

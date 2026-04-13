@@ -37,7 +37,7 @@
     }
 
     // @DEV: debería ser false por defecto:
-    static isTracing = true;
+    static isTracing = false;
 
     static trace(method) {
       if (!this.isTracing) {

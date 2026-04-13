@@ -1,7 +1,7 @@
 // @pak-module:
 // - Source generated:
-//    - date:         Thu Apr 09 2026 16:15:08 GMT+0200 (hora de verano de Europa central)
-//    - time:         0.015 seconds
+//    - date:         Mon Apr 13 2026 19:26:20 GMT+0200 (hora de verano de Europa central)
+//    - time:         0.014 seconds
 //    - modules:      1
 //       - 0. Pak.require("projects/currently/main.js")
 //    - styles:       0
@@ -35,7 +35,7 @@
     },
     // API de Pak Drivers: 3/3
     drivers: {
-      "math-addition": "src/maths/addition.js"
+      "!{src}": "src"
     },
     driverIds: false,
     resolveDriver: function(id) {
