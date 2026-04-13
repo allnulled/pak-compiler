@@ -7,8 +7,11 @@ const readableStringify = function(text, spaces = 0) {
   return "(\n" + text.split("\n").map((line) => " ".repeat(spaces) + JSON.stringify(line + "\n")).join("+\n") + "\n" + " ".repeat(spaces-1) + ")";
 }
 
+let isTracing = false;
+
 const main = async function() {
   const trace = function(text) {
+    if(!isTracing) return;
     console.log("[pak-compiler][trace] " + text);
   }
   const start = new Date();

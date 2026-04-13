@@ -209,7 +209,7 @@
          "      return undefined;\n"+
          "    }\n"+
          "    if (id.endsWith(\".html\")) {\n"+
-         "      return undefined;\n"+
+         "      return Pak.modules[id.replace(/\\.html$/g, \".js\")];\n"+
          "    }\n"+
          "    if (!(id in Pak.modules)) {\n"+
          "      throw new Error(\"Module not found «\" + id + \"» on «Pak.require»\");\n"+

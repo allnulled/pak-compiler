@@ -1,8 +1,8 @@
 // @pak-module:
 // - Source generated:
-//    - date:         Mon Apr 13 2026 19:36:52 GMT+0200 (hora de verano de Europa central)
-//    - time:         0.037 seconds
-//    - modules:      17
+//    - date:         Mon Apr 13 2026 23:04:26 GMT+0200 (hora de verano de Europa central)
+//    - time:         0.042 seconds
+//    - modules:      18
 //       - 0. Pak.require("01. Simple test/mod-a/mod-a1.js")
 //       - 1. Pak.require("01. Simple test/mod-a/mod-a2.js")
 //       - 2. Pak.require("01. Simple test/mod-a/mod-a3.js")
@@ -19,7 +19,8 @@
 //       - 13. Pak.require("03. Evaluator test/index.js")
 //       - 14. Pak.require("04. Environment dependant modules test/index.js")
 //       - 15. Pak.require("05. Command line interface/index.js")
-//       - 16. Pak.require("build.js")
+//       - 16. Pak.require("06. Html and css modules test/index.js")
+//       - 17. Pak.require("build.js")
 //    - styles:       4
 //       - 0. Pak.require("01. Simple test/mod-a/styles-a.css")
 //       - 1. Pak.require("01. Simple test/mod-a/styles-a1.css")
@@ -49,7 +50,7 @@
         return undefined;
       }
       if (id.endsWith(".html")) {
-        return undefined;
+        return Pak.modules[id.replace(/\.html$/g, ".js")];
       }
       if (!(id in Pak.modules)) {
         throw new Error("Module not found «" + id + "» on «Pak.require»");
@@ -403,7 +404,34 @@
   })({
     exports: undefined
   });
-  // @module[17] = build.js
+  // @module[17] = 06. Html and css modules test/index.js
+  (function(module) {
+    try {
+      (async function main() {
+        const path = require("path");
+        const projectRoot = path.resolve(__dirname + "/06. Html and css modules test/modules");
+        const compiler = PakCompiler.create(projectRoot);
+        const bundleData = await compiler.build("main.js");
+        const htmlModule = await compiler.run("main.js");
+        // Note the template was injected where it was suposed to:
+        PakCompiler.assert(typeof htmlModule.name === "string", "Property name must be string");
+        PakCompiler.assert(typeof htmlModule.template === "string", "Property template must be string too");
+        PakCompiler.assert(typeof htmlModule.template.indexOf("Component") !== -1, "Property template must contain Component substring");
+        // Note the order they are loaded is the correct:
+        PakCompiler.assert(bundleData.cssModules[0] === "anteriores-estilos-a.css");
+        PakCompiler.assert(bundleData.cssModules[1] === "anteriores-estilos-b.css");
+        PakCompiler.assert(bundleData.cssModules[2] === "component-1.css");
+      })();
+    } catch (error) {
+      console.log("⛔️ Error on module 06. Html and css modules test/index.js\n  ", error);
+      throw error;
+    } finally {
+      __LAST_PAK_RESULT__ = Pak.modules["06. Html and css modules test/index.js"] = module.exports;
+    }
+  })({
+    exports: undefined
+  });
+  // @module[18] = build.js
   (function(module) {
     try {
       Pak.require("01. Simple test/index.js");
@@ -411,6 +439,7 @@
       Pak.require("03. Evaluator test/index.js");
       Pak.require("04. Environment dependant modules test/index.js");
       Pak.require("05. Command line interface/index.js");
+      Pak.require("06. Html and css modules test/index.js");
     } catch (error) {
       console.log("⛔️ Error on module build.js\n  ", error);
       throw error;

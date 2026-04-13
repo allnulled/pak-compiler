@@ -1,7 +1,7 @@
 // @pak-module:
 // - Source generated:
-//    - date:         Mon Apr 13 2026 19:36:52 GMT+0200 (hora de verano de Europa central)
-//    - time:         0.256 seconds
+//    - date:         Mon Apr 13 2026 23:04:27 GMT+0200 (hora de verano de Europa central)
+//    - time:         0.335 seconds
 //    - modules:      2
 //       - 0. Pak.require("04. Environment dependant modules test/environments/!{entry}/module.js")
 //       - 1. Pak.require("04. Environment dependant modules test/entries-cross/browser.js")
@@ -27,7 +27,7 @@
         return undefined;
       }
       if (id.endsWith(".html")) {
-        return undefined;
+        return Pak.modules[id.replace(/\.html$/g, ".js")];
       }
       if (!(id in Pak.modules)) {
         throw new Error("Module not found «" + id + "» on «Pak.require»");

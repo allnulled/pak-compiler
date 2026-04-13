@@ -1,11 +1,14 @@
 // @pak-module:
 // - Source generated:
-//    - date:         Mon Apr 13 2026 19:26:20 GMT+0200 (hora de verano de Europa central)
-//    - time:         0.014 seconds
-//    - modules:      1
-//       - 0. Pak.require("projects/currently/main.js")
-//    - styles:       0
-//    - templates:    0
+//    - date:         Mon Apr 13 2026 23:04:27 GMT+0200 (hora de verano de Europa central)
+//    - time:         0.026 seconds
+//    - modules:      2
+//       - 0. Pak.require("projects/currently/components/calendar/calendar.js")
+//       - 1. Pak.require("projects/currently/main.js")
+//    - styles:       1
+//       - 0. Pak.require("projects/currently/components/calendar/calendar.css")
+//    - templates:    1
+//       - 0. Pak.require("projects/currently/components/calendar/calendar.html")
 // @module[main] = Pak
 (function(globalPak) {
   //////////////////////////////////////////////////////////////////////////////
@@ -26,7 +29,7 @@
         return undefined;
       }
       if (id.endsWith(".html")) {
-        return undefined;
+        return Pak.modules[id.replace(/\.html$/g, ".js")];
       }
       if (!(id in Pak.modules)) {
         throw new Error("Module not found «" + id + "» on «Pak.require»");
@@ -58,10 +61,30 @@
   if (typeof global !== "undefined" && typeof global.Pak === "undefined") global.Pak = Pak;
   //////////////////////////////////////////////////////////////////////////////
 
-  // @module[1] = projects/currently/main.js
+  // @module[1] = projects/currently/components/calendar/calendar.js
   (function(module) {
     try {
-      // module.exports = Pak.require ('projects/runners/colors-test.js');
+      module.exports = {
+        name: "whatever",
+        template: "<div class=\"calendar\">\n    calendario\n</div>",
+      };
+    } catch (error) {
+      console.log("⛔️ Error on module projects/currently/components/calendar/calendar.js\n  ", error);
+      throw error;
+    } finally {
+      __LAST_PAK_RESULT__ = Pak.modules["projects/currently/components/calendar/calendar.js"] = module.exports;
+    }
+  })({
+    exports: undefined
+  });
+  // @module[2] = projects/currently/main.js
+  (function(module) {
+    try {
+      const Calendar = Pak.require("projects/currently/components/calendar/calendar.html");
+
+      console.log(Calendar);
+
+      module.exports = 0;
     } catch (error) {
       console.log("⛔️ Error on module projects/currently/main.js\n  ", error);
       throw error;

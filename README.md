@@ -19,6 +19,11 @@ Tipo webpack, rollup o browserify.
       - [Fichero configurable drivers.json](#fichero-configurable-driversjson)
       - [Modulación según entrada](#modulación-según-entrada)
       - [Fuera de pak\_modules](#fuera-de-pak_modules)
+  - [Tests](#tests)
+  - [Flujos](#flujos)
+    - [Desactivar compilación del compilador pak y poner tu flujo](#desactivar-compilación-del-compilador-pak-y-poner-tu-flujo)
+    - [Crear e importar un componente html](#crear-e-importar-un-componente-html)
+    - [Herencia de estilos](#herencia-de-estilos)
 
 ## Instalar
 
@@ -64,10 +69,11 @@ En proceso, pero:
       - y luego ejecutarlo:
          - sea con `require` el fichero
          - sea con `eval` el texto
-   - `pak list projects`
-   - `pak list sources`
-   - `pak list commands`
-   - `pak list distribuibles`
+   - `pak list ?`: requieren `tree` en el `cmd`
+      - `pak list projects` 
+      - `pak list sources`
+      - `pak list commands`
+      - `pak list distribuibles`
 
 ## Explicaciones
 
@@ -227,3 +233,74 @@ Personaliza los comandos `-x` para tener máximo control de tu *pipebuilder*.
    - Si quieres ver un ejemplo de cómo no usar esta carpeta:
       - puedes ver los `test/test.js` donde no se utiliza esta carpeta
       - sino otra, la de `test` mismamente
+
+## Tests
+
+Los tests en [https://github.com/allnulled/pak-compiler/tree/main/test](https://github.com/allnulled/pak-compiler/tree/main/test) aclaran mucho más las features que se esperan de `PakCompiler API`, `Pak API` y `pak` para cmd.
+
+## Flujos
+
+A continuación se explican algunos flujos.
+
+### Desactivar compilación del compilador pak y poner tu flujo
+
+Por defecto se está compilando el compilador pak de `pak-compiler.template.js` a `pak-compiler.dist.js` cada vez que el `dev.sh` detecta cambios.
+
+En `build.sh` puedes comentar las 2-3 líneas que construyen el compilador y pasan los tests.
+
+```sh
+node src/builder-for/pak-compiler.js
+node test/test.js
+exit 0 
+```
+
+### Crear e importar un componente html
+
+Pak no obliga a ningún framework de vistas en html, solo importa el fichero html a texto en su homólogo fichero js.
+
+- `componente-1.html`
+- `componente-1.js`: aquí se inyecta el string del html en el primer `$template`
+- `componente-1.css`: este se cargará automáticamente en la pila de css
+   - recuerda que "soporta herencia", simplemente haces require de los css anteriores
+
+Esto hace que puedas compatibilizar cualquier framework si te conformas con plantillas de texto plano inyectadas en ficheros js.
+
+```html
+<div class="mi-componente-1">
+   <div>Componente 1</div>
+</div>
+```
+
+En su homólogo js:
+
+```js
+module.exports = {
+   name: "Componente1",
+   template: $template,
+   otherSettings: {},
+};
+```
+
+Luego en el js puedes:
+
+```js
+const Componente1 = Pak.require("ruta/a/componente-1.html");
+Componente1.name;
+Componente1.template;
+Componente1.otherSettings;
+```
+
+Y te quitas todo el tooling pesado de las típicas.
+
+### Herencia de estilos
+
+Pak soporta herencia de estilos css (por cada compilación) mediante su sistema de resolución de dependencias recursivo.
+
+Solo tienes que inyectar mediante un comentario css:
+
+```css
+/* Pak.require("ruta/a/estilos/anteriores.css") */
+```
+
+Y el compilador ya se encargará de incluir antes esa hoja css.
+

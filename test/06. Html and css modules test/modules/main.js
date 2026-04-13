@@ -1,0 +1,1 @@
+module.exports = Pak.require("component-1.html");

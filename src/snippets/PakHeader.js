@@ -16,7 +16,7 @@ const Pak = {
       return undefined;
     }
     if (id.endsWith(".html")) {
-      return undefined;
+      return Pak.modules[id.replace(/\.html$/g, ".js")];
     }
     if (!(id in Pak.modules)) {
       throw new Error("Module not found «" + id + "» on «Pak.require»");
