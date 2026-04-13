@@ -8,6 +8,8 @@ Tipo webpack, rollup o browserify.
   - [Índice](#índice)
   - [Instalar](#instalar)
   - [Uso](#uso)
+    - [Exportar un módulo](#exportar-un-módulo)
+    - [Importar módulo](#importar-módulo)
   - [Interfaz de línea de comandos](#interfaz-de-línea-de-comandos)
   - [Explicaciones](#explicaciones)
     - [Instrucciones de lectura del documento](#instrucciones-de-lectura-del-documento)
@@ -47,7 +49,28 @@ El `refrescador` se empalma en el fichero `dev.sh` que escucha cambios, y así p
 
 Se trata de personalizar el loop de desarrollo con `refrescador` y `pak` para escuchar cambios + compilar + pasar tests.
 
+En tanto que pak:
 
+- personalizar el sistema de modulación en compilación o evaluación
+- dotarlo de lo básico para funcionar en browser o nodejs igual
+
+### Exportar un módulo
+
+Bajo `PakCompiler.prototype.basedir` un fichero `modulo1.js` tanto en browser como en nodejs se escribe así:
+
+```js
+module.exports = function() {
+   // Este módulo es una función
+};
+```
+
+### Importar módulo
+
+Bajo `PakCompiler.prototype.basedir` un fichero cualquiera como `main.js` puede importarlo así:
+
+```js
+const funcion = Pak.require("modulo1.js");
+```
 
 ## Interfaz de línea de comandos
 
@@ -304,3 +327,4 @@ Solo tienes que inyectar mediante un comentario css:
 
 Y el compilador ya se encargará de incluir antes esa hoja css.
 
+Hay un test demostrándolo, el [06. Html and css modules test](https://github.com/allnulled/pak-compiler/blob/main/test/06.%20Html%20and%20css%20modules%20test).
