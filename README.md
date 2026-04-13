@@ -1,6 +1,8 @@
 # pak-compiler
 
-Tipo webpack, rollup o browserify.
+![https://github.com/allnulled/pak-compiler/blob/main/pak.logo.png](https://github.com/allnulled/pak-compiler/blob/main/pak.logo.png)
+
+Empaquetar javascript de browser o nodejs estilo node todo con algunas features extra.
 
 ## Índice
 
