@@ -12,8 +12,11 @@ Empaquetar javascript de browser o nodejs estilo node todo con algunas features 
   - [Índice](#índice)
   - [Instalar](#instalar)
   - [Uso](#uso)
+    - [Crear un proyecto](#crear-un-proyecto)
     - [Exportar un módulo](#exportar-un-módulo)
     - [Importar módulo](#importar-módulo)
+    - [Empaquetar módulo](#empaquetar-módulo)
+    - [Ejecutar módulo](#ejecutar-módulo)
   - [Interfaz de línea de comandos](#interfaz-de-línea-de-comandos)
   - [Explicaciones](#explicaciones)
     - [Instrucciones de lectura del documento](#instrucciones-de-lectura-del-documento)
@@ -58,6 +61,14 @@ En tanto que pak:
 - personalizar el sistema de modulación en compilación o evaluación
 - dotarlo de lo básico para funcionar en browser o nodejs igual
 
+### Crear un proyecto
+
+Desde línea de comandos haces:
+
+```js
+pak init .
+```
+
 ### Exportar un módulo
 
 Bajo `PakCompiler.prototype.basedir` un fichero `modulo1.js` tanto en browser como en nodejs se escribe así:
@@ -75,6 +86,34 @@ Bajo `PakCompiler.prototype.basedir` un fichero cualquiera como `main.js` puede 
 ```js
 const funcion = Pak.require("modulo1.js");
 ```
+
+### Empaquetar módulo
+
+Desde línea de comandos haces:
+
+```sh
+pak build proyecto entrada
+```
+
+El `proyecto` apunta a `@@/projects/proyecto`.
+
+El `entrada` apunta a `@@/projects/proyecto/entrada.js`.
+
+La salida saldrá automáticamente a `@@/dist/proyecto/entrada.dist.js` y su respectivo `entrada.dist.css`.
+
+Desde la API puedes simplemente llamar a `PakCompiler.prototype.build(file:String)`.
+
+### Ejecutar módulo
+
+Desde línea de comandos haces:
+
+```sh
+pak run proyecto entrada
+```
+
+Primero compilará y luego arrancará el proyecto.
+
+Desde la API puedes simplemente llamar a `PakCompiler.prototype.run(file:String)`.
 
 ## Interfaz de línea de comandos
 
@@ -138,49 +177,9 @@ A continuación se explica un poco cómo funciona por dentro `PakCompiler` (en c
 - Pero esto tiene algunas diferencias con la compilación o `PakCompiler.prototype.build`:
    - Los módulos no persisten en ficheros
    - Los módulos viven en memoria
-   - Los módulos deberían ser eliminados por el Garbage Collector de JavaScript al terminar el comando y sus procesos
-      - Pero no es tan fácil controlar el comportamiento del Garbage Collector, al menos desde JavaScript
-      - Y puedes generar mucha información que:
-         - se repita su evaluación en `runtime`
-         - vincule al exterior y se convierta en un *memory leak* prácticamente irrastreable
-         - interfiera con el código
-      - Un `Pak` siempre se creará con su `Pak.modules.prototype` apuntando a un `Pak` padre, de haberlo
-         - Esto significa que:
-            - los únicos módulos que se quedan en memoria
-            - más allá de la llamada `PakCompiler.prototype.run`
-            - son los módulos del primer `Pak` que se crea
-            - todos los otros se crearán como módulos de 1 clon y no del `Pak` padre
-            - y el `Pak` accesible desde los módulos
-            - nunca es el `Pak` padre
-            - sino el clon
-            - y al acabar las relaciones con las variables vivas de la memoria
-            - es decir al acabar el comando que se lanza con `run` y todos sus vínculos con los datos vivos
-            - este `Pak`, si se ha programado con cuidado, desaparecería por el Garbage Collector
-            - y volvería a dejar el espacio de memoria libre
-            - PERO
-            - para esto hay que programar con cuidado y sabiendo qué se puede hacer y qué no
-            - porque debugar este código es muy difícil
-            - porque la evaluación en vivo no tiene tan buen reporte de errores
-            - aunque ya procuro meterlo en try-catches
-            - pero el problema ni siquiera termina ahí
-            - porque ya no es el código
-            - son los datos vivos y los datos recolectados
-            - y debugar eso desde JavaScript se hace más complicado
-            - aunque hay algunas cosas como:
-               - `WeakSet` 
-               - `WeakMap` 
-               - `WeakRef` 
-               - `FinalizationRegistry` 
-            - pero son cosas que no he probado
-            - y parecen muy reflectivas, así que bueno
-- Pero existe la posibilidad de usar `PakCompiler` como evaluador
-   - y en la API solo significa 1 método de 4 líneas dar soporte a esta *feature*
-   - y en principio es segura, no es que sea experimental, usa `eval` pero está pensado para soportarlo
-   - lo único es eso, que hay que tener mucho cuidado con los `memory leaks`
-      - porque te pueden destruir la funcionalidad de la aplicación
-      - y se hacen irrasterables si la aplicación empieza a hacerse grande
-      - porque ni sabes de dónde viene ni tendrás forma de saberlo depende de cómo
-      - pasa poco, pero cuando pasa, *hay que hacerse experto en V8 para saber por qué*
+   - Tienen peor reporte de errores
+   - Corres riesgos de leaks de memoria con el Garbage Collector si lo usas mucho y mal
+      - en principio bien no debería
 
 ### Directorios
 
