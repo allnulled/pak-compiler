@@ -1,8 +1,10 @@
 # pak-compiler
 
-![https://github.com/allnulled/pak-compiler/blob/main/pak.logo2.png](https://github.com/allnulled/pak-compiler/blob/main/pak.logo2.png)
-
 Empaquetar javascript de browser o nodejs estilo node todo con algunas features extra.
+
+![build](https://img.shields.io/badge/tests-passing-brightgreen) 
+
+![https://github.com/allnulled/pak-compiler/blob/main/pak.logo2.png](https://github.com/allnulled/pak-compiler/blob/main/pak.logo2.png)
 
 ## Índice
 
